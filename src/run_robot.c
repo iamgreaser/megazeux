@@ -1652,6 +1652,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
             {
               int new_x;
               int new_y;
+              int player_index;
 
               if(is_cardinal_dir(direction))
               {
@@ -1659,10 +1660,13 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
                 new_y = y;
                 if(!move_dir(src_board, &new_x, &new_y, direction))
                 {
-                  if((mzx_world->player[0].x == new_x) &&
-                   (mzx_world->player[0].y == new_y))
+                  for(player_index = 0; player_index < MAX_PLAYERS; player_index++)
                   {
-                    success = 1;
+                    if((mzx_world->player[player_index].x == new_x) &&
+                     (mzx_world->player[player_index].y == new_y))
+                    {
+                      success = 1;
+                    }
                   }
                 }
               }
@@ -1681,10 +1685,13 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
                     new_y = y;
                     if(!move_dir(src_board, &new_x, &new_y, int_to_dir(i)))
                     {
-                      if((mzx_world->player[0].x == new_x) &&
-                       (mzx_world->player[0].y == new_y))
+                      for(player_index = 0; player_index < MAX_PLAYERS; player_index++)
                       {
-                        success = 1;
+                        if((mzx_world->player[player_index].x == new_x) &&
+                         (mzx_world->player[player_index].y == new_y))
+                        {
+                          success = 1;
+                        }
                       }
                     }
                   }
@@ -1714,8 +1721,9 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
               {
                 // Give an ID of -1 to throw it off from not
                 // allowing global robot.
-                calculate_blocked(mzx_world, mzx_world->player[0].x,
-                 mzx_world->player[0].y, -1, new_bl);
+                int player_index = get_nearest_player_index(mzx_world, x, y);
+                calculate_blocked(mzx_world, mzx_world->player[player_index].x,
+                 mzx_world->player[player_index].y, -1, new_bl);
                 update_blocked = 1;
                 break;
               }
@@ -1761,7 +1769,8 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           {
             if(id)
             {
-              if((mzx_world->player[0].x == x) || (mzx_world->player[0].y == y))
+              int player_index = get_nearest_player_index(mzx_world, x, y);
+              if((mzx_world->player[player_index].x == x) || (mzx_world->player[player_index].y == y))
                 success = 1;
             }
             break;
@@ -1771,7 +1780,8 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           {
             if(id)
             {
-              if(mzx_world->player[0].x == x)
+              int player_index = get_nearest_player_index(mzx_world, x, y);
+              if(mzx_world->player[player_index].x == x)
                 success = 1;
             }
             break;
@@ -1781,7 +1791,8 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           {
             if(id)
             {
-              if(mzx_world->player[0].y == y)
+              int player_index = get_nearest_player_index(mzx_world, x, y);
+              if(mzx_world->player[player_index].y == y)
                 success = 1;
             }
             break;
@@ -2598,13 +2609,19 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         int check_x = parse_param(mzx_world, cmd_ptr + 1, id);
         char *p2 = next_param_pos(cmd_ptr + 1);
         int check_y = parse_param(mzx_world, p2, id);
+        int player_index;
+
         prefix_mid_xy(mzx_world, &check_x, &check_y, x, y);
 
-        if((check_x == mzx_world->player[0].x) &&
-         (check_y == mzx_world->player[0].y))
+        for(player_index = 0; player_index < MAX_PLAYERS; player_index++)
         {
-          char *p3 = next_param_pos(p2);
-          gotoed = send_self_label_tr(mzx_world, p3 + 1, id);
+          if((check_x == mzx_world->player[player_index].x) &&
+           (check_y == mzx_world->player[player_index].y))
+          {
+            char *p3 = next_param_pos(p2);
+            gotoed = send_self_label_tr(mzx_world, p3 + 1, id);
+            break;
+          }
         }
         break;
       }
