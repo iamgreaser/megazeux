@@ -107,7 +107,14 @@ enum
 
 #define NUM_STATUS_COUNTERS   6
 
-#define MAX_PLAYERS   2
+#ifdef CONFIG_MULTIPLAYER
+// LAN party anyone?
+#define MAX_PLAYERS   32
+#define DEFAULT_PLAYERS   2
+#else
+#define MAX_PLAYERS   1
+#define DEFAULT_PLAYERS   1
+#endif
 
 #define ROBOT_MAX_TR 512
 

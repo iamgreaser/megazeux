@@ -67,6 +67,7 @@ usage() {
 	echo "  --disable-check-alloc Disables memory allocator error handling."
 	echo "  --disable-uthash      Disables hash counter/string lookups."
 	echo "  --enable-debytecode   Enable experimental 'debytecode' transform."
+	echo "  --enable-multiplayer  Enable experimental multiplayer support."
 	echo "  --disable-libsdl2     Disable SDL 2.0 support (falls back on 1.2)."
 	echo "  --enable-fps          Enable frames-per-second counter."
 	echo
@@ -121,6 +122,7 @@ EGL="false"
 CHECK_ALLOC="true"
 UTHASH="true"
 DEBYTECODE="false"
+MULTIPLAYER="false"
 LIBSDL2="true"
 FPSCOUNTER="false"
 
@@ -265,6 +267,9 @@ while [ "$1" != "" ]; do
 
 	[ "$1" = "--enable-debytecode" ]  && DEBYTECODE="true"
 	[ "$1" = "--disable-debytecode" ] && DEBYTECODE="false"
+
+	[ "$1" = "--enable-multiplayer" ]  && MULTIPLAYER="true"
+	[ "$1" = "--disable-multiplayer" ] && MULTIPLAYER="false"
 
 	[ "$1" = "--enable-libsdl2" ]  && LIBSDL2="true"
 	[ "$1" = "--disable-libsdl2" ] && LIBSDL2="false"
@@ -1050,6 +1055,18 @@ if [ "$DEBYTECODE" = "true" ]; then
 else
 	echo "Experimental 'debytecode' transform disabled."
 fi
+
+#
+# Experimental multiplayer support, if enabled
+#
+if [ "$MULTIPLAYER" = "true" ]; then
+	echo "Experimental multiplayer support enabled."
+	echo "#define CONFIG_MULTIPLAYER" >> src/config.h
+	echo "BUILD_MULTIPLAYER=1" >> platform.inc
+else
+	echo "Experimental multiplayer support disabled."
+fi
+
 
 #
 # SDL 2.0 support, if enabled
