@@ -75,7 +75,7 @@ void hurt_player_id(struct world *mzx_world, enum thing id)
 int get_nearest_player_index(struct world *mzx_world, int refx, int refy)
 {
   int best_player_index = 0;
-  int best_distance = (1<<31);
+  int best_distance = (1<<30);
   int player_index;
   int distance;
   int dx, dy;
