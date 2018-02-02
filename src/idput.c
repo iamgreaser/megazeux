@@ -321,7 +321,7 @@ static unsigned char get_special_id_char(struct board *src_board,
 
     case PLAYER:
     {
-      return id_chars[player_char + (src_board->player_last_dir >> 4)];
+      return id_chars[player_char + (src_board->player_last_dir[(int)param] >> 4)];
     }
 
     // everything else

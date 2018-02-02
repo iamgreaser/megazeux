@@ -101,7 +101,7 @@ static int save_board_info(struct board *cur_board, struct zip_archive *zp,
     save_prop_w(BPROP_SCROLL_Y, cur_board->scroll_y, &mf);
     save_prop_w(BPROP_LOCKED_X, cur_board->locked_x, &mf);
     save_prop_w(BPROP_LOCKED_Y, cur_board->locked_y, &mf);
-    save_prop_c(BPROP_PLAYER_LAST_DIR, cur_board->player_last_dir, &mf);
+    save_prop_c(BPROP_PLAYER_LAST_DIR, cur_board->player_last_dir[0], &mf); // TODO: more players
     save_prop_c(BPROP_LAZWALL_START, cur_board->lazwall_start, &mf);
     save_prop_c(BPROP_LAST_KEY, cur_board->last_key, &mf);
     save_prop_d(BPROP_NUM_INPUT, cur_board->num_input, &mf);
@@ -245,6 +245,8 @@ err:
 
 static void default_board(struct board *cur_board)
 {
+  int player_index;
+
   cur_board->mod_playing[0] = 0;
   cur_board->viewport_x = 0;
   cur_board->viewport_y = 0;
@@ -276,7 +278,10 @@ static void default_board(struct board *cur_board)
   cur_board->locked_x = -1;
   cur_board->locked_y = -1;
 
-  cur_board->player_last_dir = 0x10;
+  for(player_index = 0; player_index < MAX_PLAYERS; player_index++)
+  {
+    cur_board->player_last_dir[player_index] = 0x10;
+  }
   cur_board->player_ns_locked = 0;
   cur_board->player_ew_locked = 0;
   cur_board->player_attack_locked = 0;
@@ -337,6 +342,7 @@ static int load_board_info(struct board *cur_board, struct zip_archive *zp,
   size_t actual_size;
   struct memfile mf;
   struct memfile prop;
+  int player_index;
   int last_ident = -1;
   int ident;
   int size;
@@ -558,7 +564,11 @@ static int load_board_info(struct board *cur_board, struct zip_archive *zp,
         break;
 
       case BPROP_PLAYER_LAST_DIR:
-        cur_board->player_last_dir = load_prop_int(size, &prop);
+        cur_board->player_last_dir[0] = load_prop_int(size, &prop);
+        for(player_index = 1; player_index < MAX_PLAYERS; player_index++)
+        {
+          cur_board->player_last_dir[player_index] = cur_board->player_last_dir[0]; // TODO: more players
+        }
         break;
 
       case BPROP_LAZWALL_START:

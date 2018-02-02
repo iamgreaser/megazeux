@@ -93,6 +93,7 @@ int legacy_load_board_direct(struct world *mzx_world, struct board *cur_board,
   int num_robots, num_scrolls, num_sensors, num_robots_active;
   int overlay_mode, size, board_width, board_height, i;
   int viewport_x, viewport_y, viewport_width, viewport_height;
+  int player_index;
   int truncated = 0;
 
   struct robot *cur_robot;
@@ -122,7 +123,10 @@ int legacy_load_board_direct(struct world *mzx_world, struct board *cur_board,
   cur_board->num_input = 0;
   cur_board->input_size = 0;
   cur_board->input_string[0] = 0;
-  cur_board->player_last_dir = 0x10;
+  for(player_index = 0; player_index < MAX_PLAYERS; player_index++)
+  {
+    cur_board->player_last_dir[player_index] = 0x10;
+  }
   cur_board->bottom_mesg[0] = 0;
   cur_board->b_mesg_timer = 0;
   cur_board->lazwall_start = 7;
@@ -290,7 +294,11 @@ int legacy_load_board_direct(struct world *mzx_world, struct board *cur_board,
     fread(cur_board->input_string, LEGACY_INPUT_STRING_MAX + 1, 1, fp);
     cur_board->input_string[LEGACY_INPUT_STRING_MAX] = 0;
 
-    cur_board->player_last_dir = fgetc(fp);
+    cur_board->player_last_dir[0] = fgetc(fp);
+    for(player_index = 1; player_index < MAX_PLAYERS; player_index++)
+    {
+      cur_board->player_last_dir[player_index] = cur_board->player_last_dir[0];
+    }
 
     fread(cur_board->bottom_mesg, LEGACY_BOTTOM_MESG_MAX + 1, 1, fp);
     cur_board->bottom_mesg[LEGACY_BOTTOM_MESG_MAX] = 0;
@@ -319,7 +327,11 @@ int legacy_load_board_direct(struct world *mzx_world, struct board *cur_board,
     fread(cur_board->input_string, len, 1, fp);
     cur_board->input_string[len] = 0;
 
-    cur_board->player_last_dir = fgetc(fp);
+    cur_board->player_last_dir[0] = fgetc(fp);
+    for(player_index = 1; player_index < MAX_PLAYERS; player_index++)
+    {
+      cur_board->player_last_dir[player_index] = cur_board->player_last_dir[0];
+    }
 
     len = fgetw(fp);
     if(len >= ROBOT_MAX_TR)

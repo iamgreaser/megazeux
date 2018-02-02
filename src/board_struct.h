@@ -70,7 +70,7 @@ struct board
   int num_input;
   size_t input_size;
   char input_string[ROBOT_MAX_TR];
-  int player_last_dir;
+  int player_last_dir[MAX_PLAYERS];
   char bottom_mesg[ROBOT_MAX_TR];
   int b_mesg_timer;
   int lazwall_start;

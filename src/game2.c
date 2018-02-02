@@ -1878,12 +1878,13 @@ void shoot_lazer(struct world *mzx_world, int x, int y, int dir, int length,
 
     if(id == PLAYER)
     {
+      int player_index = level_param[offset];
       hurt_player_id(mzx_world, LAZER);
 
       // Restart if zapped?
       if(src_board->restart_if_zapped != 1)
       {
-        int p_dir = (src_board->player_last_dir) & 0x0F;
+        int p_dir = (src_board->player_last_dir[player_index]) & 0x0F;
         if(p_dir != 0)
         {
           // Move the player in the opposite direction

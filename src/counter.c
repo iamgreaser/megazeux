@@ -373,13 +373,14 @@ static int minval_read(struct world *mzx_world,
 static int playerfacedir_read(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int id)
 {
-  return mzx_world->current_board->player_last_dir >> 4;
+  return mzx_world->current_board->player_last_dir[0] >> 4;
 }
 
 static void playerfacedir_write(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int value, int id)
 {
   struct board *src_board = mzx_world->current_board;
+  int player_index;
 
   if(value < 0)
     value = 0;
@@ -387,20 +388,24 @@ static void playerfacedir_write(struct world *mzx_world,
   if(value > 3)
     value = 3;
 
-  src_board->player_last_dir =
-   (src_board->player_last_dir & 0x0F) | (value << 4);
+  for(player_index = 0; player_index < mzx_world->player_count; player_index++)
+  {
+    src_board->player_last_dir[player_index] =
+     (src_board->player_last_dir[player_index] & 0x0F) | (value << 4);
+  }
 }
 
 static int playerlastdir_read(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int id)
 {
-  return mzx_world->current_board->player_last_dir & 0x0F;
+  return mzx_world->current_board->player_last_dir[0] & 0x0F;
 }
 
 static void playerlastdir_write(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int value, int id)
 {
   struct board *src_board = mzx_world->current_board;
+  int player_index;
 
   if(value < 0)
     value = 0;
@@ -408,8 +413,11 @@ static void playerlastdir_write(struct world *mzx_world,
   if(value > 4)
     value = 4;
 
-  src_board->player_last_dir =
-   (src_board->player_last_dir & 0xF0) | value;
+  for(player_index = 0; player_index < mzx_world->player_count; player_index++)
+  {
+    src_board->player_last_dir[player_index] =
+     (src_board->player_last_dir[player_index] & 0xF0) | value;
+  }
 }
 
 static int horizpld_read(struct world *mzx_world,

@@ -441,8 +441,8 @@ static void load_world_selection(struct world *mzx_world)
 static void update_player(struct world *mzx_world, int player_index)
 {
   struct board *src_board = mzx_world->current_board;
-  int player_x = mzx_world->player[0].x;
-  int player_y = mzx_world->player[0].y;
+  int player_x = mzx_world->player[player_index].x;
+  int player_y = mzx_world->player[player_index].y;
   int board_width = src_board->board_width;
   enum thing under_id =
    (enum thing)src_board->level_under_id[player_x +
@@ -458,11 +458,11 @@ static void update_player(struct world *mzx_world, int player_index)
   {
     case ICE:
     {
-      int player_last_dir = src_board->player_last_dir;
+      int player_last_dir = src_board->player_last_dir[player_index];
       if(player_last_dir & 0x0F)
       {
         if(move_player(mzx_world, player_index, (player_last_dir & 0x0F) - 1))
-          src_board->player_last_dir = player_last_dir & 0xF0;
+          src_board->player_last_dir[player_index] = player_last_dir & 0xF0;
       }
       break;
     }
@@ -850,8 +850,8 @@ static void place_player(struct world *mzx_world, int player_index, int x, int y
   id_place(mzx_world, x, y, PLAYER, 0, player_index);
   mzx_world->player[player_index].x = x;
   mzx_world->player[player_index].y = y;
-  src_board->player_last_dir =
-   (src_board->player_last_dir & 240) | (dir + 1);
+  src_board->player_last_dir[player_index] =
+   (src_board->player_last_dir[player_index] & 240) | (dir + 1);
 }
 
 static void give_potion(struct world *mzx_world, enum potion type)
@@ -1423,8 +1423,8 @@ static int update(struct world *mzx_world, int game, int *fadein)
     if(wind_dir < 4)
     {
       // No wind this turn if above 3
-      src_board->player_last_dir =
-       (src_board->player_last_dir & 0xF0) + wind_dir;
+      src_board->player_last_dir[player_index] =
+       (src_board->player_last_dir[player_index] & 0xF0) + wind_dir;
       move_player(mzx_world, player_index, wind_dir);
     }
   }
@@ -1475,8 +1475,8 @@ static int update(struct world *mzx_world, int game, int *fadein)
               shoot(mzx_world, mzx_world->player[player_index].x, mzx_world->player[player_index].y,
                move_dir, PLAYER_BULLET);
               mzx_world->player[player_index].reload = 2;
-              src_board->player_last_dir =
-               (src_board->player_last_dir & 0x0F) | (move_dir << 4);
+              src_board->player_last_dir[player_index] =
+               (src_board->player_last_dir[player_index] & 0x0F) | (move_dir << 4);
             }
           }
         }
@@ -1490,7 +1490,7 @@ static int update(struct world *mzx_world, int game, int *fadein)
         if((key_up_delay == 0) || (key_up_delay > REPEAT_WAIT))
         {
           move_player(mzx_world, player_index, 0);
-          src_board->player_last_dir = (src_board->player_last_dir & 0x0F);
+          src_board->player_last_dir[player_index] = (src_board->player_last_dir[player_index] & 0x0F);
         }
         if(key_up_delay <= REPEAT_WAIT)
           mzx_world->player[player_index].key_up_delay = key_up_delay + 1;
@@ -1504,8 +1504,8 @@ static int update(struct world *mzx_world, int game, int *fadein)
         if((key_down_delay == 0) || (key_down_delay > REPEAT_WAIT))
         {
           move_player(mzx_world, player_index, 1);
-          src_board->player_last_dir =
-           (src_board->player_last_dir & 0x0F) + 0x10;
+          src_board->player_last_dir[player_index] =
+           (src_board->player_last_dir[player_index] & 0x0F) + 0x10;
         }
         if(key_down_delay <= REPEAT_WAIT)
           mzx_world->player[player_index].key_down_delay = key_down_delay + 1;
@@ -1519,8 +1519,8 @@ static int update(struct world *mzx_world, int game, int *fadein)
         if((key_right_delay == 0) || (key_right_delay > REPEAT_WAIT))
         {
           move_player(mzx_world, player_index, 2);
-          src_board->player_last_dir =
-           (src_board->player_last_dir & 0x0F) + 0x20;
+          src_board->player_last_dir[player_index] =
+           (src_board->player_last_dir[player_index] & 0x0F) + 0x20;
         }
         if(key_right_delay <= REPEAT_WAIT)
           mzx_world->player[player_index].key_right_delay = key_right_delay + 1;
@@ -1534,8 +1534,8 @@ static int update(struct world *mzx_world, int game, int *fadein)
         if((key_left_delay == 0) || (key_left_delay > REPEAT_WAIT))
         {
           move_player(mzx_world, player_index, 3);
-          src_board->player_last_dir =
-           (src_board->player_last_dir & 0x0F) + 0x30;
+          src_board->player_last_dir[player_index] =
+           (src_board->player_last_dir[player_index] & 0x0F) + 0x30;
         }
         if(key_left_delay <= REPEAT_WAIT)
           mzx_world->player[player_index].key_left_delay = key_left_delay + 1;
@@ -2009,7 +2009,7 @@ static int update(struct world *mzx_world, int game, int *fadein)
 
   if(mzx_world->target_where != TARGET_NONE)
   {
-    int saved_player_last_dir = src_board->player_last_dir;
+    int saved_player_last_dir = src_board->player_last_dir[player_index];
     int target_board = mzx_world->target_board;
     int load_assets = 0;
 
@@ -2206,15 +2206,15 @@ static int update(struct world *mzx_world, int game, int *fadein)
     send_robot_def(mzx_world, 0, LABEL_JUSTENTERED);
     mzx_world->player_restart_x = mzx_world->player[0].x;
     mzx_world->player_restart_y = mzx_world->player[0].y;
-    // Now... Set player_last_dir for direction FACED
-    src_board->player_last_dir = (src_board->player_last_dir & 0x0F) |
+    // Now... Set player_last_dir[player_index] for direction FACED
+    src_board->player_last_dir[player_index] = (src_board->player_last_dir[player_index] & 0x0F) |
      (saved_player_last_dir & 0xF0);
 
     // ...and if player ended up on ICE, set last dir pressed as well
     if((enum thing)level_under_id[mzx_world->player[0].x +
      (mzx_world->player[0].y * board_width)] == ICE)
     {
-      src_board->player_last_dir = saved_player_last_dir;
+      src_board->player_last_dir[player_index] = saved_player_last_dir;
     }
 
     // Fix palette
@@ -3645,8 +3645,8 @@ int move_player(struct world *mzx_world, int player_index, int dir)
         break;
       }
     }
-    src_board->player_last_dir =
-     (src_board->player_last_dir & 240) + dir + 1;
+    src_board->player_last_dir[player_index] =
+     (src_board->player_last_dir[player_index] & 240) + dir + 1;
     return 0;
   }
   else
@@ -3709,14 +3709,14 @@ int move_player(struct world *mzx_world, int player_index, int dir)
       {
         if(d_id == TRANSPORT)
         {
-          int player_last_dir = src_board->player_last_dir;
+          int player_last_dir = src_board->player_last_dir[player_index];
           // Teleporter
           id_remove_top(mzx_world, player_x, player_y);
           mzx_world->under_player_id = (char)d_under_id;
           mzx_world->under_player_color = d_under_color;
           mzx_world->under_player_param = d_under_param;
-          src_board->player_last_dir =
-           (player_last_dir & 240) + dir + 1;
+          src_board->player_last_dir[player_index] =
+           (player_last_dir & 0xF0) + dir + 1;
           // New player x/y will be found after update !!! maybe fix.
         }
         else

@@ -197,6 +197,7 @@ struct board *create_blank_board(struct editor_config_info *conf)
 {
   struct board *cur_board = cmalloc(sizeof(struct board));
   int layer_size = conf->board_width * conf->board_height;
+  int player_index;
   int i;
 
   cur_board->size = 0;
@@ -245,7 +246,12 @@ struct board *create_blank_board(struct editor_config_info *conf)
   cur_board->num_input = 0;
   cur_board->input_size = 0;
   cur_board->input_string[0] = 0;
-  cur_board->player_last_dir = 0x10;
+
+  for(player_index = 0; player_index < MAX_PLAYERS; player_index++)
+  {
+    cur_board->player_last_dir[player_index] = 0x10;
+  }
+
   cur_board->bottom_mesg[0] = 0;
   cur_board->b_mesg_timer = 0;
   cur_board->lazwall_start = 7;
