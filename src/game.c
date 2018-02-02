@@ -1274,7 +1274,6 @@ static int update(struct world *mzx_world, int game, int *fadein)
 {
   int start_ticks = get_ticks();
   int time_remaining;
-  static int reload = 0;
   static int slowed = 0; // Flips between 0 and 1 during slow_time
   char tmp_str[10];
   struct board *src_board = mzx_world->current_board;
@@ -1439,7 +1438,7 @@ static int update(struct world *mzx_world, int game, int *fadein)
       if(get_key_status(keycode_internal_wrt_numlock, player_key_shoot[player_index])
        && mzx_world->bi_shoot_status)
       {
-        if((!reload) && (!src_board->player_attack_locked))
+        if((!mzx_world->player[player_index].reload) && (!src_board->player_attack_locked))
         {
           int move_dir = -1;
 
@@ -1475,7 +1474,7 @@ static int update(struct world *mzx_world, int game, int *fadein)
               play_sfx(mzx_world, 28);
               shoot(mzx_world, mzx_world->player[player_index].x, mzx_world->player[player_index].y,
                move_dir, PLAYER_BULLET);
-              reload = 2;
+              mzx_world->player[player_index].reload = 2;
               src_board->player_last_dir =
                (src_board->player_last_dir & 0x0F) | (move_dir << 4);
             }
@@ -1599,8 +1598,12 @@ static int update(struct world *mzx_world, int game, int *fadein)
           }
         }
       }
+
+      if(mzx_world->player[player_index].reload)
+      {
+        mzx_world->player[player_index].reload--;
+      }
     }
-    if(reload) reload--;
   }
 
   mzx_world->change_game_state = 0;

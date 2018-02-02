@@ -53,6 +53,8 @@ struct player_runtime
   int key_down_delay;
   int key_right_delay;
   int key_left_delay;
+
+  int reload;
 };
 
 struct world
