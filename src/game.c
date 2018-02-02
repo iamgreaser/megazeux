@@ -1411,7 +1411,7 @@ static int update(struct world *mzx_world, int game, int *fadein)
   // Update
   update_variables(mzx_world, slowed);
   player_index = 0;
-  for(player_index = 0; player_index < MAX_PLAYERS; player_index++)
+  for(player_index = 0; player_index < mzx_world->player_count; player_index++)
   {
     update_player(mzx_world, player_index); // Ice, fire, water, lava
   }
@@ -1432,7 +1432,7 @@ static int update(struct world *mzx_world, int game, int *fadein)
   // The following is during gameplay ONLY
   if(game && (!mzx_world->dead))
   {
-    for(player_index = 0; player_index < MAX_PLAYERS; player_index++)
+    for(player_index = 0; player_index < mzx_world->player_count; player_index++)
     {
       // Shoot
       if(get_key_status(keycode_internal_wrt_numlock, player_key_shoot[player_index])
@@ -3659,7 +3659,7 @@ int move_player(struct world *mzx_world, int player_index, int dir)
     int other_idx;
 
     // Forbid pushing other players
-    for(other_idx = 0; other_idx < MAX_PLAYERS; other_idx++)
+    for(other_idx = 0; other_idx < mzx_world->player_count; other_idx++)
     {
       if(new_x == mzx_world->player[other_idx].x && new_y == mzx_world->player[other_idx].y)
         return 0;
@@ -4351,7 +4351,7 @@ void find_player(struct world *mzx_world)
 {
   int player_index;
 
-  for(player_index = 0; player_index < MAX_PLAYERS; player_index++)
+  for(player_index = 0; player_index < mzx_world->player_count; player_index++)
   {
     find_single_player(mzx_world, player_index);
   }

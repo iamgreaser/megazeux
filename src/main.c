@@ -171,6 +171,7 @@ __libspec int main(int argc, char *argv[])
 
   mzx_world.mzx_speed = mzx_world.conf.mzx_speed;
   mzx_world.default_speed = mzx_world.mzx_speed;
+  mzx_world.player_count = MAX_PLAYERS;
 
   // Run main game (mouse is hidden and palette is faded)
   title_screen(&mzx_world);

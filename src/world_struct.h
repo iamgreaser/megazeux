@@ -164,6 +164,7 @@ struct world
 
   // Not part of world/save files, but runtime globals
   struct player_runtime player[MAX_PLAYERS];
+  int player_count;
 
   // For moving the player between boards
   enum board_target target_where;

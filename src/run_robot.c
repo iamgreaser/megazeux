@@ -1660,7 +1660,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
                 new_y = y;
                 if(!move_dir(src_board, &new_x, &new_y, direction))
                 {
-                  for(player_index = 0; player_index < MAX_PLAYERS; player_index++)
+                  for(player_index = 0; player_index < mzx_world->player_count; player_index++)
                   {
                     if((mzx_world->player[player_index].x == new_x) &&
                      (mzx_world->player[player_index].y == new_y))
@@ -1685,7 +1685,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
                     new_y = y;
                     if(!move_dir(src_board, &new_x, &new_y, int_to_dir(i)))
                     {
-                      for(player_index = 0; player_index < MAX_PLAYERS; player_index++)
+                      for(player_index = 0; player_index < mzx_world->player_count; player_index++)
                       {
                         if((mzx_world->player[player_index].x == new_x) &&
                          (mzx_world->player[player_index].y == new_y))
@@ -2613,7 +2613,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
 
         prefix_mid_xy(mzx_world, &check_x, &check_y, x, y);
 
-        for(player_index = 0; player_index < MAX_PLAYERS; player_index++)
+        for(player_index = 0; player_index < mzx_world->player_count; player_index++)
         {
           if((check_x == mzx_world->player[player_index].x) &&
            (check_y == mzx_world->player[player_index].y))

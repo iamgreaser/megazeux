@@ -80,7 +80,7 @@ int get_nearest_player_index(struct world *mzx_world, int refx, int refy)
   int distance;
   int dx, dy;
 
-  for(player_index = 0; player_index < MAX_PLAYERS; player_index++)
+  for(player_index = 0; player_index < mzx_world->player_count; player_index++)
   {
     dx = refx - mzx_world->player[player_index].x;
     dy = refy - mzx_world->player[player_index].y;
