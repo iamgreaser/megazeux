@@ -107,6 +107,8 @@ enum
 
 #define NUM_STATUS_COUNTERS   6
 
+#define MAX_PLAYERS   2
+
 #define ROBOT_MAX_TR 512
 
 __M_END_DECLS

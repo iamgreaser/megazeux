@@ -70,13 +70,43 @@ void hurt_player_id(struct world *mzx_world, enum thing id)
   set_mesg(mzx_world, "Ouch!");
 }
 
+// Finds the player nearest to a given point
+
+int get_nearest_player_index(struct world *mzx_world, int refx, int refy)
+{
+  int best_player_index = 0;
+  int best_distance = (1<<31);
+  int player_index;
+  int distance;
+  int dx, dy;
+
+  for(player_index = 0; player_index < MAX_PLAYERS; player_index++)
+  {
+    dx = refx - mzx_world->player[player_index].x;
+    dy = refy - mzx_world->player[player_index].y;
+    dx = (dx < 0 ? -dx : dx);
+    dy = (dy < 0 ? -dy : dy);
+
+    distance = dx + dy; // Manhattan distance is good enough for this
+    
+    if(distance < best_distance)
+    {
+      best_player_index = player_index;
+      best_distance = distance;
+    }
+  }
+
+  return best_player_index;
+}
+
 // Return the seek dir relative to the player.
 
 static int find_seek(struct world *mzx_world, int x, int y)
 {
   int dir;
-  int player_x = mzx_world->player_x;
-  int player_y = mzx_world->player_y;
+  int player_index = get_nearest_player_index(mzx_world, x, y);
+  int player_x = mzx_world->player[player_index].x;
+  int player_y = mzx_world->player[player_index].y;
 
   if(y == player_y)
   {
@@ -1495,8 +1525,9 @@ void update_board(struct world *mzx_world)
           {
             int sensitivity = ((current_param & 0x07) + 1) << 1;
             int player_distance;
-            int player_dist_x = mzx_world->player_x - x;
-            int player_dist_y = mzx_world->player_y - y;
+            int player_index = get_nearest_player_index(mzx_world, x, y);
+            int player_dist_x = mzx_world->player[player_index].x - x;
+            int player_dist_y = mzx_world->player[player_index].y - y;
 
             // Zero out move cycle
             level_param[level_offset] &= 0x9F;

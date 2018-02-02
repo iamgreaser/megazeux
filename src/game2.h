@@ -30,6 +30,7 @@ __M_BEGIN_DECLS
 #include "world_struct.h"
 
 void hurt_player_id(struct world *mzx_world, enum thing id);
+int get_nearest_player_index(struct world *mzx_world, int refx, int refy);
 void update_board(struct world *mzx_world);
 void shoot_lazer(struct world *mzx_world, int x, int y, int dir, int length,
  int color);

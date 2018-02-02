@@ -43,6 +43,18 @@ __M_BEGIN_DECLS
 #define CHANGE_STATE_PLAY_GAME_ROBOTIC 4
 #define CHANGE_STATE_REQUEST_EXIT 5
 
+struct player_runtime
+{
+  int x;
+  int y;
+
+  // For use in repeat delays for player movement
+  int key_up_delay;
+  int key_down_delay;
+  int key_right_delay;
+  int key_left_delay;
+};
+
 struct world
 {
   // 0 if a world has been loaded, 1 if it hasn't
@@ -149,8 +161,7 @@ struct world
   char custom_sfx[NUM_SFX * SFX_SIZE];
 
   // Not part of world/save files, but runtime globals
-  int player_x;
-  int player_y;
+  struct player_runtime player[MAX_PLAYERS];
 
   // For moving the player between boards
   enum board_target target_where;
@@ -170,12 +181,6 @@ struct world
 
   // Toggle for if the screen is in slow motion
   int slow_down;
-
-  // For use in repeat delays for player movement
-  int key_up_delay;
-  int key_down_delay;
-  int key_right_delay;
-  int key_left_delay;
 
   // 1-3 normal 5-7 is 1-3 but from a REL FIRST cmd
   int first_prefix;

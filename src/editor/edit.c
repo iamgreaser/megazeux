@@ -639,9 +639,9 @@ int place_current_at_xy(struct world *mzx_world, enum thing id, int color,
 
       if(id == PLAYER)
       {
-        id_remove_top(mzx_world, mzx_world->player_x, mzx_world->player_y);
-        mzx_world->player_x = x;
-        mzx_world->player_y = y;
+        id_remove_top(mzx_world, mzx_world->player[0].x, mzx_world->player[0].y);
+        mzx_world->player[0].x = x;
+        mzx_world->player[0].y = y;
       }
       else
 
@@ -988,15 +988,15 @@ static void do_block_command(struct world *mzx_world, int block_command,
          original_width, original_height);
 
         // Work around to move the player
-        if((mzx_world->player_x >= block_x) &&
-         (mzx_world->player_y >= block_y) &&
-         (mzx_world->player_x < (block_x + block_width)) &&
-         (mzx_world->player_y < (block_y + block_height)) &&
+        if((mzx_world->player[0].x >= block_x) &&
+         (mzx_world->player[0].y >= block_y) &&
+         (mzx_world->player[0].x < (block_x + block_width)) &&
+         (mzx_world->player[0].y < (block_y + block_height)) &&
          (block_board == dest_board))
         {
           place_player_xy(mzx_world,
-           mzx_world->player_x - block_x + dest_x,
-           mzx_world->player_y - block_y + dest_y);
+           mzx_world->player[0].x - block_x + dest_x,
+           mzx_world->player[0].y - block_y + dest_y);
         }
         break;
       }
@@ -3954,9 +3954,9 @@ static void __edit_world(struct world *mzx_world, int reload_curr_file)
               draw_mode = 0;
 
             // Uh oh, we might need a new player
-            if((mzx_world->player_x >= board_width) ||
-             (mzx_world->player_y >= board_height))
-              replace_player(mzx_world);
+            if((mzx_world->player[0].x >= board_width) ||
+             (mzx_world->player[0].y >= board_height))
+              replace_player(mzx_world, 0);
 
             modified = 1;
           }
@@ -4127,8 +4127,8 @@ static void __edit_world(struct world *mzx_world, int reload_curr_file)
             send_robot_def(mzx_world, 0, LABEL_JUSTLOADED);
             find_player(mzx_world);
 
-            mzx_world->player_restart_x = mzx_world->player_x;
-            mzx_world->player_restart_y = mzx_world->player_y;
+            mzx_world->player_restart_x = mzx_world->player[0].x;
+            mzx_world->player_restart_y = mzx_world->player[0].y;
 
             load_board_module(mzx_world, src_board);
 

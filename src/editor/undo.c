@@ -568,8 +568,8 @@ static void apply_board_update(struct undo_frame *f)
   }
 
   // Handle player position changes
-  current->current_player_x = current->mzx_world->player_x;
-  current->current_player_y = current->mzx_world->player_y;
+  current->current_player_x = current->mzx_world->player[0].x;
+  current->current_player_y = current->mzx_world->player[0].y;
 
   if((current->current_player_x != current->prev_player_x) ||
    (current->current_player_y != current->prev_player_y))
@@ -703,8 +703,8 @@ void add_board_undo_frame(struct world *mzx_world, struct undo_history *h,
     // The player might be moved by the frame, so back up the position
     current->type = BOARD_FRAME;
     current->mzx_world = mzx_world;
-    current->prev_player_x = mzx_world->player_x;
-    current->prev_player_y = mzx_world->player_y;
+    current->prev_player_x = mzx_world->player[0].x;
+    current->prev_player_y = mzx_world->player[0].y;
     current->move_player = 0;
 
     // We only care about a handful of things here
@@ -746,8 +746,8 @@ void add_block_undo_frame(struct world *mzx_world, struct undo_history *h,
     // The player might be moved by the frame, so back up the position
     current->type = BLOCK_FRAME;
     current->mzx_world = mzx_world;
-    current->prev_player_x = mzx_world->player_x;
-    current->prev_player_y = mzx_world->player_y;
+    current->prev_player_x = mzx_world->player[0].x;
+    current->prev_player_y = mzx_world->player[0].y;
     current->move_player = 0;
 
     current->width = width;
