@@ -374,7 +374,16 @@ static unsigned char get_special_id_color(struct board *src_board,
       break;
 
     case PLAYER: /* player */
-      return id_chars[player_color];
+      if(param == 0)
+      {
+        return id_chars[player_color];
+      }
+      else
+      {
+        unsigned char c = id_chars[player_color];
+        c = (c<<4)|(c>>4);
+        return c;
+      }
 
     default:
       return color;
