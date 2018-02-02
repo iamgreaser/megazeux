@@ -835,6 +835,7 @@ static void game_settings(struct world *mzx_world)
 static void place_player(struct world *mzx_world, int player_index, int x, int y, int dir)
 {
   struct board *src_board = mzx_world->current_board;
+  int other_index;
   int player_x = mzx_world->player[player_index].x;
   int player_y = mzx_world->player[player_index].y;
   int main_player_x = mzx_world->player[0].x;
@@ -848,6 +849,21 @@ static void place_player(struct world *mzx_world, int player_index, int x, int y
     }
   }
   id_place(mzx_world, x, y, PLAYER, 0, player_index);
+  if(player_index == 0)
+  {
+    // Move unsplit players in lockstep
+    for(other_index = 1; other_index < mzx_world->player_count; other_index++)
+    {
+      if((mzx_world->player[other_index].x == player_x)
+       && (mzx_world->player[other_index].y == player_y))
+      {
+        mzx_world->player[other_index].x = x;
+        mzx_world->player[other_index].y = y;
+        src_board->player_last_dir[other_index] =
+         (src_board->player_last_dir[other_index] & 240) | (dir + 1);
+      }
+    }
+  }
   mzx_world->player[player_index].x = x;
   mzx_world->player[player_index].y = y;
   src_board->player_last_dir[player_index] =
@@ -2009,7 +2025,7 @@ static int update(struct world *mzx_world, int game, int *fadein)
 
   if(mzx_world->target_where != TARGET_NONE)
   {
-    int saved_player_last_dir = src_board->player_last_dir[player_index];
+    int saved_player_last_dir = src_board->player_last_dir[0];
     int target_board = mzx_world->target_board;
     int load_assets = 0;
 
@@ -2206,15 +2222,18 @@ static int update(struct world *mzx_world, int game, int *fadein)
     send_robot_def(mzx_world, 0, LABEL_JUSTENTERED);
     mzx_world->player_restart_x = mzx_world->player[0].x;
     mzx_world->player_restart_y = mzx_world->player[0].y;
-    // Now... Set player_last_dir[player_index] for direction FACED
-    src_board->player_last_dir[player_index] = (src_board->player_last_dir[player_index] & 0x0F) |
-     (saved_player_last_dir & 0xF0);
-
-    // ...and if player ended up on ICE, set last dir pressed as well
-    if((enum thing)level_under_id[mzx_world->player[0].x +
-     (mzx_world->player[0].y * board_width)] == ICE)
+    // Now... Set player_last_dir for direction FACED
+    for(player_index = 0; player_index < mzx_world->player_count; player_index++)
     {
-      src_board->player_last_dir[player_index] = saved_player_last_dir;
+      src_board->player_last_dir[player_index] = (src_board->player_last_dir[player_index] & 0x0F) |
+       (saved_player_last_dir & 0xF0);
+
+      // ...and if player ended up on ICE, set last dir pressed as well
+      if((enum thing)level_under_id[mzx_world->player[player_index].x +
+       (mzx_world->player[player_index].y * board_width)] == ICE)
+      {
+        src_board->player_last_dir[player_index] = saved_player_last_dir;
+      }
     }
 
     // Fix palette
@@ -3646,7 +3665,7 @@ int move_player(struct world *mzx_world, int player_index, int dir)
       }
     }
     src_board->player_last_dir[player_index] =
-     (src_board->player_last_dir[player_index] & 240) + dir + 1;
+     (src_board->player_last_dir[player_index] & 0xF0) + dir + 1;
     return 0;
   }
   else
