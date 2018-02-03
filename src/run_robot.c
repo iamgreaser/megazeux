@@ -317,39 +317,51 @@ static int place_dir_xy(struct world *mzx_world, enum thing id, int color,
 
 int place_player_xy(struct world *mzx_world, int x, int y)
 {
-  if((mzx_world->player[0].x != x) || (mzx_world->player[0].y != y))
+  int success = 0;
+  int player_index;
+
+  for(player_index = 0; player_index < mzx_world->player_count; player_index++)
   {
-    struct board *src_board = mzx_world->current_board;
-    int offset = x + (y * src_board->board_width);
-    int did = src_board->level_id[offset];
-    int dparam = src_board->level_param[offset];
-
-    if(is_robot(did))
+    if((mzx_world->player[player_index].x != x) || (mzx_world->player[player_index].y != y))
     {
-      clear_robot_id(src_board, dparam);
+      struct board *src_board = mzx_world->current_board;
+      int offset = x + (y * src_board->board_width);
+      int did = src_board->level_id[offset];
+      int dparam = src_board->level_param[offset];
+
+      if(is_robot(did))
+      {
+        clear_robot_id(src_board, dparam);
+      }
+      else
+
+      if(is_signscroll(did))
+      {
+        clear_scroll_id(src_board, dparam);
+      }
+      else
+
+      if(did == SENSOR)
+      {
+        step_sensor(mzx_world, dparam);
+      }
+
+      id_remove_top(mzx_world, mzx_world->player[player_index].x, mzx_world->player[player_index].y);
+      if(player_index == 0)
+      {
+        id_place(mzx_world, x, y, PLAYER, 0, 0);
+      }
+      mzx_world->player[player_index].x = x;
+      mzx_world->player[player_index].y = y;
+
+      if(player_index == 0)
+      {
+        success = 1;
+      }
     }
-    else
-
-    if(is_signscroll(did))
-    {
-      clear_scroll_id(src_board, dparam);
-    }
-    else
-
-    if(did == SENSOR)
-    {
-      step_sensor(mzx_world, dparam);
-    }
-
-    id_remove_top(mzx_world, mzx_world->player[0].x, mzx_world->player[0].y);
-    id_place(mzx_world, x, y, PLAYER, 0, 0);
-    mzx_world->player[0].x = x;
-    mzx_world->player[0].y = y;
-
-    return 1;
   }
 
-  return 0;
+  return success;
 }
 
 static void send_at_xy(struct world *mzx_world, int id, int x, int y,

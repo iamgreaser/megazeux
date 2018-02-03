@@ -2118,8 +2118,11 @@ static int update(struct world *mzx_world, int game, int *fadein)
           if(d_id == PLAYER)
           {
             // Remove the player, maybe readd
-            mzx_world->player[0].x = x;
-            mzx_world->player[0].y = y;
+            for(player_index = 0; player_index < mzx_world->player_count; player_index++)
+            {
+              mzx_world->player[player_index].x = x;
+              mzx_world->player[player_index].y = y;
+            }
             id_remove_top(mzx_world, x, y);
             // Grab again - might have revealed an entrance
             d_id = (enum thing)level_id[offset];
@@ -2190,12 +2193,20 @@ static int update(struct world *mzx_world, int game, int *fadein)
 
       if(i < 5)
       {
-        mzx_world->player[0].x = tmp_x[i];
-        mzx_world->player[0].y = tmp_y[i];
+        for(player_index = 0; player_index < mzx_world->player_count; player_index++)
+        {
+          mzx_world->player[player_index].x = tmp_x[i];
+          mzx_world->player[player_index].y = tmp_y[i];
+        }
       }
 
       id_place(mzx_world, mzx_world->player[0].x,
        mzx_world->player[0].y, PLAYER, 0, 0);
+      for(player_index = 1; player_index < mzx_world->player_count; player_index++)
+      {
+        mzx_world->player[player_index].x = mzx_world->player[0].x;
+        mzx_world->player[player_index].y = mzx_world->player[0].y;
+      }
     }
     else
     {
@@ -4323,7 +4334,7 @@ int grab_item(struct world *mzx_world, int offset, int dir)
   return remove; // Not grabbed
 }
 
-static void find_single_player(struct world *mzx_world, int player_index)
+void find_single_player(struct world *mzx_world, int player_index)
 {
   struct board *src_board = mzx_world->current_board;
   int board_width = src_board->board_width;
@@ -4338,9 +4349,39 @@ static void find_single_player(struct world *mzx_world, int player_index)
   if(mzx_world->player[player_index].y >= board_height)
     mzx_world->player[player_index].y = 0;
 
-  if((enum thing)level_id[mzx_world->player[player_index].x +
-   (mzx_world->player[player_index].y * board_width)] != PLAYER)
+  offset = (mzx_world->player[player_index].x
+   + (mzx_world->player[player_index].y * board_width));
+
+  if((enum thing)level_id[offset] != PLAYER)
   {
+    int xmin, xmax;
+    int ymin, ymax;
+    int player_x = mzx_world->player[player_index].x;
+    int player_y = mzx_world->player[player_index].y;
+
+    // Fast pre-check: 5x5 region
+    // Maximum is inclusive
+    xmin = MAX(player_x-2, 0); xmax = MIN(player_x+2, board_width-1);
+    ymin = MAX(player_y-2, 0); ymax = MIN(player_y+2, board_height-1);
+    for(dy = ymin; dy <= ymax; dy++)
+    {
+      for(dx = xmin; dx <= xmax; dx++)
+      {
+        offset = (dx + (dy * board_width)); // your compiler should hoist this
+        if((enum thing)level_id[offset] == PLAYER)
+        {
+          if(level_param[offset] == player_index)
+          {
+            debug("find_single_player(%d): 5x5 check\n", player_index);
+            mzx_world->player[player_index].x = dx;
+            mzx_world->player[player_index].y = dy;
+            return;
+          }
+        }
+      }
+    }
+
+    // Slow check
     for(dy = 0, offset = 0; dy < board_height; dy++)
     {
       for(dx = 0; dx < board_width; dx++, offset++)
@@ -4349,6 +4390,7 @@ static void find_single_player(struct world *mzx_world, int player_index)
         {
           if(level_param[offset] == player_index || level_param[offset] == 0)
           {
+            debug("find_single_player(%d): slow check %d\n", player_index, level_param[offset]);
             mzx_world->player[player_index].x = dx;
             mzx_world->player[player_index].y = dy;
           }
