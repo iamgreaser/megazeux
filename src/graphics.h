@@ -130,7 +130,7 @@ struct video_layer {
 struct graphics_data
 {
   Uint32 screen_mode;
-  char default_caption[32];
+  char default_caption[64];
   struct char_element text_video[SCREEN_W * SCREEN_H];
   Uint8 charset[CHAR_SIZE * CHARSET_SIZE * NUM_CHARSETS];
   struct rgb_color palette[SMZX_PAL_SIZE];

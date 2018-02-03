@@ -1416,8 +1416,8 @@ bool init_video(struct config_info *conf, const char *caption)
     }
   }
 
-  strncpy(graphics.default_caption, caption, 32);
-  graphics.default_caption[31] = '\0';
+  strncpy(graphics.default_caption, caption, 64);
+  graphics.default_caption[63] = '\0';
 
   if(!graphics.renderer.init_video(&graphics, conf))
   {

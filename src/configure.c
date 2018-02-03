@@ -649,11 +649,19 @@ static const struct config_info default_options =
 #if defined(CONFIG_UPDATER)
   UPDATE_HOST_COUNT,            // update_host_count
   NULL,                         // update_hosts
+#if defined(CONFIG_MULTIPLAYER)
+#if defined(CONFIG_DEBYTECODE)
+  "Multiplayer+Debytecode",                 // update_branch_pin
+#else /* !CONFIG_DEBYTECODE */
+  "Multiplayer",                     // update_branch_pin
+#endif /* !CONFIG_DEBYTECODE */
+#else /* !CONFIG_MULTIPLAYER */
 #if defined(CONFIG_DEBYTECODE)
   "Debytecode",                 // update_branch_pin
 #else /* !CONFIG_DEBYTECODE */
   "Stable",                     // update_branch_pin
 #endif /* !CONFIG_DEBYTECODE */
+#endif /* !CONFIG_MULTIPLAYER */
 #endif /* CONFIG_UPDATER */
 };
 

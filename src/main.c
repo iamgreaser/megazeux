@@ -57,7 +57,11 @@
 #define VERSION_DATE
 #endif
 
+#ifdef CONFIG_MULTIPLAYER
+#define CAPTION "MegaZeux " VERSION " Multiplayer" VERSION_DATE
+#else
 #define CAPTION "MegaZeux " VERSION VERSION_DATE
+#endif
 
 #ifdef __amigaos__
 #define __libspec LIBSPEC
