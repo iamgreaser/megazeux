@@ -1430,19 +1430,22 @@ static int update(struct world *mzx_world, int game, int *fadein)
   for(player_index = 0; player_index < mzx_world->player_count; player_index++)
   {
     update_player(mzx_world, player_index); // Ice, fire, water, lava
+  }
 
-    if(mzx_world->wind_dur > 0)
+  if(mzx_world->wind_dur > 0)
+  {
+    // Wind
+    int wind_dir = Random(9);
+    if(wind_dir < 4)
     {
-      // Wind
-      int wind_dir = Random(9);
-      if(wind_dir < 4)
+      move_player(mzx_world, -1, wind_dir);
+      for(player_index = 0; player_index < mzx_world->player_count; player_index++)
       {
         // No wind this turn if above 3
         src_board->player_last_dir[player_index] =
          (src_board->player_last_dir[player_index] & 0xF0) + wind_dir;
-        move_player(mzx_world, player_index, wind_dir);
-        find_single_player(mzx_world, player_index);
       }
+      find_player(mzx_world);
     }
   }
 
@@ -3598,16 +3601,31 @@ int move_player(struct world *mzx_world, int player_index, int dir)
   struct board *src_board = mzx_world->current_board;
   // Dir is from 0 to 3
 
-  // FIXME: a player_index of -1 should move ALL players
+  // A player_index of -1 will move ALL players
   int base_player_index = (player_index == -1 ? 0 : player_index);
   int player_x = mzx_world->player[base_player_index].x;
   int player_y = mzx_world->player[base_player_index].y;
-  //int main_player_x = mzx_world->player[0].x;
-  //int main_player_y = mzx_world->player[0].y;
-  //bool split_new_player = (base_player_index != 0 && player_x == main_player_x && player_y == main_player_y);
   int new_x = player_x;
   int new_y = player_y;
   int edge = 0;
+
+  if(player_index == -1)
+  {
+    int i;
+    int success = 0;
+    for(i = 0; i < mzx_world->player_count; i++)
+    {
+      int main_player_x = mzx_world->player[0].x;
+      int main_player_y = mzx_world->player[0].y;
+      player_x = mzx_world->player[i].x;
+      player_y = mzx_world->player[i].y;
+      if(i == 0 || (player_x != main_player_x || player_y != main_player_y))
+      {
+        success = success | move_player(mzx_world, i, dir);
+      }
+    }
+    return success;
+  }
 
   switch(dir)
   {
@@ -3735,7 +3753,7 @@ int move_player(struct world *mzx_world, int player_index, int dir)
       enum thing d_under_id = (enum thing)mzx_world->under_player_id;
       char d_under_color = mzx_world->under_player_color;
       char d_under_param = mzx_world->under_player_param;
-      int grab_result = grab_item(mzx_world, d_offset, dir);
+      int grab_result = grab_item(mzx_world, player_index, d_offset, dir);
       if(grab_result)
       {
         if(d_id == TRANSPORT)
@@ -3837,7 +3855,7 @@ int move_player(struct world *mzx_world, int player_index, int dir)
   return 1;
 }
 
-int grab_item(struct world *mzx_world, int offset, int dir)
+int grab_item(struct world *mzx_world, int player_index, int offset, int dir)
 {
   // Dir is for transporter
   struct board *src_board = mzx_world->current_board;
@@ -4178,8 +4196,21 @@ int grab_item(struct world *mzx_world, int offset, int dir)
       int x = offset % src_board->board_width;
       int y = offset / src_board->board_width;
 
-      if(transport(mzx_world, x, y, dir, PLAYER, 0, 0, 1))
-        break;
+      if(player_index >= 0)
+      {
+        // Transport a player
+        // for some reason, it goes param,color rather than color,param
+        if(transport(mzx_world, x, y, dir, PLAYER, player_index, 0, 1))
+          break;
+      } else {
+        // Unify players after transporting a player
+        // TODO!
+        debug("Transporting non-player %d\n", player_index);
+        if(transport(mzx_world, x, y, dir, PLAYER, 0, 0, 1))
+        {
+          break;
+        }
+      }
 
       return 1;
     }

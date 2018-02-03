@@ -39,7 +39,7 @@ void set_intro_mesg_timer(unsigned int time);
 void calculate_xytop(struct world *mzx_world, int *x, int *y);
 void find_single_player(struct world *mzx_world, int player_index);
 int move_player(struct world *mzx_world, int player_index, int dir);
-int grab_item(struct world *mzx_world, int offset, int dir);
+int grab_item(struct world *mzx_world, int player_index, int offset, int dir);
 void set_mesg(struct world *mzx_world, const char *str);
 void set_mesg_direct(struct board *src_board, const char *str);
 void rotate(struct world *mzx_world, int x, int y, int dir);
