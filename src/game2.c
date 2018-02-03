@@ -550,7 +550,7 @@ void update_board(struct world *mzx_world)
                   if(is_robot(new_id))
                   {
                     // Send bombed label
-                    send_robot_def(mzx_world, new_param, LABEL_BOMBED);
+                    send_robot_def(mzx_world, new_param, LABEL_BOMBED, -1);
                     continue;
                   }
 
@@ -1902,7 +1902,7 @@ void shoot_lazer(struct world *mzx_world, int x, int y, int dir, int length,
     {
       param = level_param[offset];
       // Send the robot the lazer label
-      send_robot_def(mzx_world, param, LABEL_LAZER);
+      send_robot_def(mzx_world, param, LABEL_LAZER, -1);
 
       break;
     }
@@ -2258,7 +2258,8 @@ int push(struct world *mzx_world, int x, int y, int dir, int checking)
         if(d_id == ROBOT_PUSHABLE)
         {
           // Send the default label for pushing
-          send_robot_def(mzx_world, d_param, LABEL_PUSHED);
+          // TODO: check player index cause
+          send_robot_def(mzx_world, d_param, LABEL_PUSHED, -1);
         }
 
         // Load current into previous
@@ -2388,7 +2389,8 @@ void shoot(struct world *mzx_world, int x, int y, int dir, int type)
         // Player bullets don't hurt player
         if(type == PLAYER_BULLET) break;
         hurt_player_id(mzx_world, BULLET);
-        send_robot_def(mzx_world, 0, LABEL_PLAYERHIT);
+        // TODO: find player source
+        send_robot_def(mzx_world, 0, LABEL_PLAYERHIT, -1);
         break;
       }
 
@@ -2398,7 +2400,7 @@ void shoot(struct world *mzx_world, int x, int y, int dir, int type)
         int idx = d_param;
         // Send the current shot label to the robot
         // 4 is PLAYERSHOT, 5 is NEUTRAL, 6 is ENEMY
-        send_robot_def(mzx_world, d_param, type + 4);
+        send_robot_def(mzx_world, d_param, type + 4, -1);
         // Set its last shot dir..
         (src_board->robot_list[idx])->last_shot_dir =
          int_to_dir(flip_dir(dir));
@@ -2547,7 +2549,7 @@ void shoot_fire(struct world *mzx_world, int x, int y, int dir)
   if(is_robot(d_id))
   {
     // Send the spitfire label
-    send_robot_def(mzx_world, d_param, LABEL_SPITFIRE);
+    send_robot_def(mzx_world, d_param, LABEL_SPITFIRE, -1);
   }
   else
 
@@ -2655,7 +2657,7 @@ enum move_status move(struct world *mzx_world, int x, int y, int dir,
   if((move_flags & SPITFIRE) && is_robot(d_id))
   {
     // Send the label
-    send_robot_def(mzx_world, d_param, LABEL_SPITFIRE);
+    send_robot_def(mzx_world, d_param, LABEL_SPITFIRE, -1);
     return HIT;
   }
 

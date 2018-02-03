@@ -88,6 +88,8 @@ void create_blank_robot(struct robot *cur_robot)
   for(i = 0; i<32; i++)
     cur_robot->local[i] = 0;
 
+  cur_robot->player_index = -1;
+
 #ifdef CONFIG_EDITOR
   cur_robot->command_map = NULL;
   cur_robot->command_map_length = 0;
@@ -233,6 +235,8 @@ static int load_robot_from_memory(struct world *mzx_world, struct robot *cur_rob
       case RPROP_CAN_GOOPWALK:
         cur_robot->can_goopwalk = load_prop_int(size, &prop);
         break;
+
+      // TODO: PLAYER_INDEX
 
       // Slated for separation
 #ifdef CONFIG_DEBYTECODE
@@ -1307,17 +1311,17 @@ int find_robot(struct board *src_board, const char *name,
 
 /* Built-in label only wrappers for send_robot_id and send_robot_all */
 int send_robot_id_def(struct world *mzx_world, int robot_id, const char *mesg,
- int ignore_lock)
+ int player_index, int ignore_lock)
 {
   char submesg[ROBOT_MAX_TR];
-  int result = send_robot_id(mzx_world, robot_id, mesg, ignore_lock), subresult;
+  int result = send_robot_id(mzx_world, robot_id, mesg, player_index, ignore_lock), subresult;
 
   //now, attempt to send the subroutine version of it
   if(mzx_world->version >= 0x0254)
   {
     strcpy(submesg, "#");
     strncat(submesg, mesg, ROBOT_MAX_TR - 2);
-    subresult = send_robot_id(mzx_world, robot_id, submesg, ignore_lock);
+    subresult = send_robot_id(mzx_world, robot_id, submesg, player_index, ignore_lock);
     if(result && !subresult)
       result = subresult;
   }
@@ -1338,16 +1342,16 @@ void send_robot_all_def(struct world *mzx_world, const char *mesg)
   }
 }
 
-void send_robot_def(struct world *mzx_world, int robot_id, int mesg_id)
+void send_robot_def(struct world *mzx_world, int robot_id, int mesg_id, int player_index)
 {
   switch(mesg_id)
   {
     case LABEL_TOUCH:
-      send_robot_id_def(mzx_world, robot_id, "TOUCH", 0);
+      send_robot_id_def(mzx_world, robot_id, "TOUCH", player_index, 0);
       break;
 
     case LABEL_BOMBED:
-      send_robot_id_def(mzx_world, robot_id, "BOMBED", 0);
+      send_robot_id_def(mzx_world, robot_id, "BOMBED", player_index, 0);
       break;
 
     case LABEL_INVINCO:
@@ -1355,27 +1359,27 @@ void send_robot_def(struct world *mzx_world, int robot_id, int mesg_id)
       break;
 
     case LABEL_PUSHED:
-      send_robot_id_def(mzx_world, robot_id, "PUSHED", 0);
+      send_robot_id_def(mzx_world, robot_id, "PUSHED", player_index, 0);
       break;
 
     case LABEL_PLAYERSHOT:
-      if(send_robot_id_def(mzx_world, robot_id, "PLAYERSHOT", 0))
+      if(send_robot_id_def(mzx_world, robot_id, "PLAYERSHOT", player_index, 0))
       {
-        send_robot_id_def(mzx_world, robot_id, "SHOT", 0);
+        send_robot_id_def(mzx_world, robot_id, "SHOT", player_index, 0);
       }
       break;
 
     case LABEL_NEUTRALSHOT:
-      if(send_robot_id_def(mzx_world, robot_id, "NEUTRALSHOT", 0))
+      if(send_robot_id_def(mzx_world, robot_id, "NEUTRALSHOT", player_index, 0))
       {
-        send_robot_id_def(mzx_world, robot_id, "SHOT", 0);
+        send_robot_id_def(mzx_world, robot_id, "SHOT", player_index, 0);
       }
       break;
 
     case LABEL_ENEMYSHOT:
-      if(send_robot_id_def(mzx_world, robot_id, "ENEMYSHOT", 0))
+      if(send_robot_id_def(mzx_world, robot_id, "ENEMYSHOT", player_index, 0))
       {
-        send_robot_id_def(mzx_world, robot_id, "SHOT", 0);
+        send_robot_id_def(mzx_world, robot_id, "SHOT", player_index, 0);
       }
       break;
 
@@ -1384,11 +1388,11 @@ void send_robot_def(struct world *mzx_world, int robot_id, int mesg_id)
       break;
 
     case LABEL_LAZER:
-      send_robot_id_def(mzx_world, robot_id, "LAZER", 0);
+      send_robot_id_def(mzx_world, robot_id, "LAZER", player_index, 0);
       break;
 
     case LABEL_SPITFIRE:
-      send_robot_id_def(mzx_world, robot_id, "SPITFIRE", 0);
+      send_robot_id_def(mzx_world, robot_id, "SPITFIRE", player_index, 0);
       break;
 
     case LABEL_JUSTLOADED: //no subroutine version
@@ -1496,7 +1500,7 @@ static void send_sensor_command(struct world *mzx_world, int id, int command)
         }
         else
         {
-          send_robot(mzx_world, cur_sensor->robot_to_mesg, "SENSORTHUD", 0);
+          send_robot(mzx_world, cur_sensor->robot_to_mesg, "SENSORTHUD", -1, 0);
         }
       }
       else
@@ -1528,7 +1532,7 @@ static void send_sensor_command(struct world *mzx_world, int id, int command)
       if(move_status != NO_HIT)
       {
         // Sensorthud!
-        send_robot(mzx_world, cur_sensor->robot_to_mesg, "SENSORTHUD", 0);
+        send_robot(mzx_world, cur_sensor->robot_to_mesg, "SENSORTHUD", -1, 0);
       }
       break;
     }
@@ -1840,7 +1844,7 @@ static int send_robot_direct(struct world *mzx_world, struct robot *cur_robot,
 }
 
 void send_robot(struct world *mzx_world, char *name, const char *mesg,
- int ignore_lock)
+ int player_index, int ignore_lock)
 {
   struct board *src_board = mzx_world->current_board;
   int first, last;
@@ -1874,9 +1878,13 @@ void send_robot(struct world *mzx_world, char *name, const char *mesg,
 }
 
 int send_robot_id(struct world *mzx_world, int id, const char *mesg,
- int ignore_lock)
+ int player_index, int ignore_lock)
 {
   struct robot *cur_robot = mzx_world->current_board->robot_list[id];
+  if(player_index >= -1)
+  {
+    cur_robot->player_index = MAX(-1, MIN(player_index, mzx_world->player_count));
+  }
   return send_robot_direct(mzx_world, cur_robot, mesg, ignore_lock, 0);
 }
 
@@ -2179,7 +2187,7 @@ void prefix_mid_xy_var(struct world *mzx_world, int *mx, int *my,
 }
 
 // Unbounded version.
-void prefix_mid_xy_unbound(struct world *mzx_world, int *mx, int *my, int x, int y)
+void prefix_mid_xy_unbound(struct world *mzx_world, int player_index, int *mx, int *my, int x, int y)
 {
   int tmx = *mx;
   int tmy = *my;
@@ -2196,8 +2204,13 @@ void prefix_mid_xy_unbound(struct world *mzx_world, int *mx, int *my, int x, int
     case 2:
     {
       find_player(mzx_world);
-      tmx += mzx_world->player[0].x;
-      tmy += mzx_world->player[0].y;
+      if(player_index == -1)
+      {
+        // Find nearest
+        player_index = get_nearest_player_index(mzx_world, x, y);
+      }
+      tmx += mzx_world->player[player_index].x;
+      tmy += mzx_world->player[player_index].y;
       break;
     }
 
@@ -2215,12 +2228,12 @@ void prefix_mid_xy_unbound(struct world *mzx_world, int *mx, int *my, int x, int
 
 // Just does the middle prefixes, since those are all that's usually
 // needed...
-void prefix_mid_xy(struct world *mzx_world, int *mx, int *my, int x, int y)
+void prefix_mid_xy(struct world *mzx_world, int player_index, int *mx, int *my, int x, int y)
 {
   struct board *src_board = mzx_world->current_board;
   int board_width = src_board->board_width;
   int board_height = src_board->board_height;
-  prefix_mid_xy_unbound(mzx_world, mx, my, x, y);
+  prefix_mid_xy_unbound(mzx_world, player_index, mx, my, x, y);
 
   if(*mx < 0)
     *mx = 0;
@@ -2855,14 +2868,14 @@ void push_sensor(struct world *mzx_world, int id)
 {
   struct board *src_board = mzx_world->current_board;
   send_robot(mzx_world, (src_board->sensor_list[id])->robot_to_mesg,
-   "SENSORPUSHED", 0);
+   "SENSORPUSHED", -1, 0);
 }
 
 void step_sensor(struct world *mzx_world, int id)
 {
   struct board *src_board = mzx_world->current_board;
   send_robot(mzx_world, (src_board->sensor_list[id])->robot_to_mesg,
-   "SENSORON", 0);
+   "SENSORON", -1, 0);
 }
 
 // Translates message at target to the given buffer, returning location

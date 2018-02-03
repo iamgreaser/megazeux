@@ -665,7 +665,7 @@ static int goto_send_dialog(struct world *mzx_world, int robot_id)
       // Goto
       case 0:
       {
-        send_robot_id(mzx_world, robot_id, label_tr, 1);
+        send_robot_id(mzx_world, robot_id, label_tr, -1, 1);
         break;
       }
 
@@ -675,7 +675,7 @@ static int goto_send_dialog(struct world *mzx_world, int robot_id)
         name_tr = cmalloc(ROBOT_MAX_TR);
         tr_msg(mzx_world, name_in, robot_id, name_tr);
 
-        send_robot(mzx_world, name_tr, label_tr, ignore[0]);
+        send_robot(mzx_world, name_tr, label_tr, -1, ignore[0]);
 
         free(name_tr);
         break;
@@ -685,7 +685,7 @@ static int goto_send_dialog(struct world *mzx_world, int robot_id)
       case 2:
       {
         sprintf(name_in, "all");
-        send_robot(mzx_world, name_in, label_tr, ignore[0]);
+        send_robot(mzx_world, name_in, label_tr, -1, ignore[0]);
         break;
       }
     }

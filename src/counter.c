@@ -171,6 +171,25 @@ static void loopcount_write(struct world *mzx_world,
   (mzx_world->current_board->robot_list[id])->loop_count = value;
 }
 
+static int player_count_read(struct world *mzx_world,
+ const struct function_counter *counter, const char *name, int id)
+{
+  return mzx_world->player_count;
+}
+
+static int player_index_read(struct world *mzx_world,
+ const struct function_counter *counter, const char *name, int id)
+{
+  return (mzx_world->current_board->robot_list[id])->player_index;
+}
+
+static void player_index_write(struct world *mzx_world,
+ const struct function_counter *counter, const char *name, int value, int id)
+{
+  (mzx_world->current_board->robot_list[id])->player_index = (
+   MAX(-1, MIN(mzx_world->player_count-1, value)));
+}
+
 static int playerdist_read(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int id)
 {
@@ -2462,6 +2481,8 @@ static const struct function_counter builtin_counters[] =
   { "playerlastdir", 0, playerlastdir_read, playerlastdir_write },   // <=2.51
   { "playerx", 0x0208, playerx_read, NULL },                         // 2.51s1
   { "playery", 0x0208, playery_read, NULL },                         // 2.51s1
+  { "player_count", 0, player_count_read, NULL },                    // Git, multiplayer branch
+  { "player_index", 0, player_index_read, player_index_write },      // Git, multiplayer branch
   { "play_game", 0x025A, NULL, play_game_write },                    // 2.90
   { "r!.*", 0x0241, r_read, r_write },                               // 2.65
   { "random_seed!", 0x025B, random_seed_read, random_seed_write },   // 2.91
@@ -3141,7 +3162,7 @@ static int hurt_player(struct world *mzx_world, int value)
   if(get_counter(mzx_world, "INVINCO", 0) <= 0)
   {
     struct board *src_board = mzx_world->current_board;
-    send_robot_def(mzx_world, 0, LABEL_PLAYERHURT);
+    send_robot_def(mzx_world, 0, LABEL_PLAYERHURT, -1);
     if(src_board->restart_if_zapped)
     {
       int player_restart_x = mzx_world->player_restart_x;

@@ -315,49 +315,66 @@ static int place_dir_xy(struct world *mzx_world, enum thing id, int color,
   }
 }
 
-int place_player_xy(struct world *mzx_world, int x, int y)
+int place_player_xy(struct world *mzx_world, int player_index, int x, int y)
 {
   int success = 0;
-  int player_index;
 
-  for(player_index = 0; player_index < mzx_world->player_count; player_index++)
+  if(player_index == -1)
   {
-    if((mzx_world->player[player_index].x != x) || (mzx_world->player[player_index].y != y))
+    // TODO: cleanly unite all players
+    int i;
+
+    for(i = 0; i < mzx_world->player_count; i++)
     {
-      struct board *src_board = mzx_world->current_board;
-      int offset = x + (y * src_board->board_width);
-      int did = src_board->level_id[offset];
-      int dparam = src_board->level_param[offset];
+      success = success | place_player_xy(mzx_world, i, x, y);
+    }
 
-      if(is_robot(did))
-      {
-        clear_robot_id(src_board, dparam);
-      }
-      else
+    return success;
+  }
 
-      if(is_signscroll(did))
-      {
-        clear_scroll_id(src_board, dparam);
-      }
-      else
+  if((mzx_world->player[player_index].x != x) || (mzx_world->player[player_index].y != y))
+  {
+    struct board *src_board = mzx_world->current_board;
+    int offset = x + (y * src_board->board_width);
+    int did = src_board->level_id[offset];
+    int dparam = src_board->level_param[offset];
 
-      if(did == SENSOR)
-      {
-        step_sensor(mzx_world, dparam);
-      }
+    if(is_robot(did))
+    {
+      clear_robot_id(src_board, dparam);
+    }
+    else
 
-      id_remove_top(mzx_world, mzx_world->player[player_index].x, mzx_world->player[player_index].y);
-      if(player_index == 0)
-      {
-        id_place(mzx_world, x, y, PLAYER, 0, 0);
-      }
-      mzx_world->player[player_index].x = x;
-      mzx_world->player[player_index].y = y;
+    if(is_signscroll(did))
+    {
+      clear_scroll_id(src_board, dparam);
+    }
+    else
 
-      if(player_index == 0)
-      {
-        success = 1;
-      }
+    if(did == SENSOR)
+    {
+      step_sensor(mzx_world, dparam);
+    }
+
+    id_remove_top(mzx_world, mzx_world->player[player_index].x, mzx_world->player[player_index].y);
+    if(player_index == 0
+     || x != mzx_world->player[0].x
+     || y != mzx_world->player[0].y)
+    {
+      id_place(mzx_world, x, y, PLAYER, 0, player_index);
+
+      debug("Place player %d: %d %d -> %d %d\n",
+        player_index,
+        mzx_world->player[player_index].x,
+        mzx_world->player[player_index].y,
+        x, y);
+    }
+    mzx_world->player[player_index].x = x;
+    mzx_world->player[player_index].y = y;
+
+    if(player_index == 0)
+    {
+      success = 1;
     }
   }
 
@@ -386,7 +403,7 @@ static void send_at_xy(struct world *mzx_world, int id, int x, int y,
     else
     {
       send_robot_id(mzx_world, src_board->level_param[offset],
-       label_buffer, 0);
+       label_buffer, -2, 0);
     }
   }
 }
@@ -996,8 +1013,8 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
       if(status == HIT_EDGE)
       {
         // Send to edge, if no response, then to thud.
-        if(send_robot_id_def(mzx_world, id, "edge", 1))
-          send_robot_id_def(mzx_world, id, "thud", 1);
+        if(send_robot_id_def(mzx_world, id, "edge", -1, 1))
+          send_robot_id_def(mzx_world, id, "thud", -1, 1);
       }
       else if(status == NO_HIT)
       {
@@ -1019,7 +1036,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           goto breaker;
       }
       else
-        send_robot_id_def(mzx_world, id, "thud", 1);
+        send_robot_id_def(mzx_world, id, "thud", -1, 1);
     }
 
     if(cur_robot->cur_prog_line == 0)
@@ -1106,7 +1123,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         {
           clear_robot_id(src_board, id);
           id_remove_top(mzx_world, x, y);
-          place_player_xy(mzx_world, x, y);
+          place_player_xy(mzx_world, cur_robot->player_index, x, y);
         }
         return;
       }
@@ -1285,7 +1302,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           int new_x = parse_param(mzx_world, cmd_ptr + 1, id);
           char *p2 = next_param_pos(cmd_ptr + 1);
           int new_y = parse_param(mzx_world, p2, id);
-          prefix_mid_xy(mzx_world, &new_x, &new_y, x, y);
+          prefix_mid_xy(mzx_world, -1, &new_x, &new_y, x, y);
 
           if((new_x != x) || (new_y != y))
           {
@@ -2027,9 +2044,9 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
 
           if (check_param < MAX_SPRITES &&
            mzx_world->sprite_list[check_param]->flags & SPRITE_UNBOUND)
-            prefix_mid_xy_unbound(mzx_world, &check_x, &check_y, x, y);
+            prefix_mid_xy_unbound(mzx_world, -1, &check_x, &check_y, x, y);
           else
-            prefix_mid_xy(mzx_world, &check_x, &check_y, x, y);
+            prefix_mid_xy(mzx_world, -1, &check_x, &check_y, x, y);
 
           /* 256 == p?? */
           if(check_param == 256)
@@ -2090,9 +2107,9 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
             check_y += check_sprite->y;
           }
           if (check_sprite->flags & SPRITE_UNBOUND)
-            prefix_mid_xy_unbound(mzx_world, &check_x, &check_y, x, y);
+            prefix_mid_xy_unbound(mzx_world, -1, &check_x, &check_y, x, y);
           else
-            prefix_mid_xy(mzx_world, &check_x, &check_y, x, y);
+            prefix_mid_xy(mzx_world, -1, &check_x, &check_y, x, y);
           offset = check_x + (check_y * board_width);
 
           ret = sprite_colliding_xy(mzx_world, check_sprite,
@@ -2106,7 +2123,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         }
         else
         {
-          prefix_mid_xy(mzx_world, &check_x, &check_y, x, y);
+          prefix_mid_xy(mzx_world, -1, &check_x, &check_y, x, y);
           offset = check_x + (check_y * board_width);
 
           split_colors(check_color, &fg, &bg);
@@ -2128,7 +2145,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           char *p2 = next_param_pos(cmd_ptr + 1);
           int check_y = parse_param(mzx_world, p2, id);
 
-          prefix_mid_xy(mzx_world, &check_x, &check_y, x, y);
+          prefix_mid_xy(mzx_world, -1, &check_x, &check_y, x, y);
           if((check_x == x) && (check_y == y))
           {
             char *p3 = next_param_pos(p2);
@@ -2190,7 +2207,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         tr_msg(mzx_world, cmd_ptr + 2, id, robot_name_buffer);
         tr_msg(mzx_world, p2 + 1, id, label_buffer);
 
-        send_robot(mzx_world, robot_name_buffer, label_buffer, 0);
+        send_robot(mzx_world, robot_name_buffer, label_buffer, -1, 0);
 
         // Did the position get changed? (send to self)
         if(old_pos != cur_robot->cur_prog_line)
@@ -2602,13 +2619,17 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         int put_x = parse_param(mzx_world, cmd_ptr + 1, id);
         char *p2 = next_param_pos(cmd_ptr + 1);
         int put_y = parse_param(mzx_world, p2, id);
+        int player_index = cur_robot->player_index;
 
-        prefix_mid_xy(mzx_world, &put_x, &put_y, x, y);
+        if(player_index == -1)
+          player_index = 0;
 
-        if(place_player_xy(mzx_world, put_x, put_y))
+        prefix_mid_xy(mzx_world, player_index, &put_x, &put_y, x, y);
+
+        if(place_player_xy(mzx_world, cur_robot->player_index, put_x, put_y))
         {
           done = 1;
-          if((mzx_world->player[0].x == x) && (mzx_world->player[0].y == y))
+          if((mzx_world->player[player_index].x == x) && (mzx_world->player[player_index].y == y))
           {
             return;
           }
@@ -2623,7 +2644,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         int check_y = parse_param(mzx_world, p2, id);
         int player_index;
 
-        prefix_mid_xy(mzx_world, &check_x, &check_y, x, y);
+        prefix_mid_xy(mzx_world, -1, &check_x, &check_y, x, y);
 
         for(player_index = 0; player_index < mzx_world->player_count; player_index++)
         {
@@ -2640,18 +2661,23 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
 
       case ROBOTIC_CMD_PUT_PLAYER_DIR: // put player dir
       {
+        int player_index = cur_robot->player_index;
         enum dir put_dir = parse_param_dir(mzx_world, cmd_ptr + 1);
         put_dir = parsedir(put_dir, x, y, cur_robot->walk_dir);
 
+        if(player_index == -1)
+          player_index = 0;
+
+        debug("Put player %d -> %d %d\n", cur_robot->player_index, x, y);
         if(is_cardinal_dir(put_dir))
         {
           int put_x = x;
           int put_y = y;
           if(!move_dir(src_board, &put_x, &put_y, put_dir))
           {
-            if(place_player_xy(mzx_world, put_x, put_y))
+            if(place_player_xy(mzx_world, cur_robot->player_index, put_x, put_y))
             {
-              if((mzx_world->player[0].x == x) && (mzx_world->player[0].y == y))
+              if((mzx_world->player[player_index].x == x) && (mzx_world->player[player_index].y == y))
               {
                 return;
               }
@@ -2958,9 +2984,9 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           if((unsigned int)put_param < 256)
           {
             if (mzx_world->sprite_list[put_param]->flags & SPRITE_UNBOUND)
-              prefix_mid_xy_unbound(mzx_world, &put_x, &put_y, x, y);
+              prefix_mid_xy_unbound(mzx_world, -1, &put_x, &put_y, x, y);
             else
-              prefix_mid_xy(mzx_world, &put_x, &put_y, x, y);
+              prefix_mid_xy(mzx_world, -1, &put_x, &put_y, x, y);
 
             plot_sprite(mzx_world, mzx_world->sprite_list[put_param],
              put_color, put_x, put_y);
@@ -2972,7 +2998,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           if(put_id < SENSOR)
           {
             put_color = parse_param(mzx_world, cmd_ptr + 1, id);
-            prefix_mid_xy(mzx_world, &put_x, &put_y, x, y);
+            prefix_mid_xy(mzx_world, -1, &put_x, &put_y, x, y);
             place_at_xy(mzx_world, put_id, put_color, put_param,
              put_x, put_y);
             // Still alive?
@@ -2991,7 +3017,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         char *p2 = next_param_pos(cmd_ptr + 1);
         int send_y = parse_param(mzx_world, p2, id);
         char *p3 = next_param_pos(p2);
-        prefix_mid_xy(mzx_world, &send_x, &send_y, x, y);
+        prefix_mid_xy(mzx_world, -1, &send_x, &send_y, x, y);
 
         send_at_xy(mzx_world, id, send_x, send_y, p3 + 1);
         // Did the position get changed? (send to self)
@@ -3040,7 +3066,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         int offset;
         int d_id;
 
-        prefix_mid_xy(mzx_world, &copy_x, &copy_y, x, y);
+        prefix_mid_xy(mzx_world, -1, &copy_x, &copy_y, x, y);
         offset = copy_x + (copy_y * board_width);
         d_id = (enum thing)level_id[offset];
 
@@ -3126,7 +3152,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         enum thing duplicate_id;
         int duplicate_color, offset;
 
-        prefix_mid_xy(mzx_world, &duplicate_x, &duplicate_y, x, y);
+        prefix_mid_xy(mzx_world, -1, &duplicate_x, &duplicate_y, x, y);
 
         if((duplicate_x != x) || (duplicate_y != y))
         {
@@ -3511,7 +3537,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         if(board_id != NO_BOARD)
         {
           set_current_board_ext(mzx_world, mzx_world->board_list[board_id]);
-          prefix_mid_xy(mzx_world, &teleport_x, &teleport_y, x, y);
+          prefix_mid_xy(mzx_world, -1, &teleport_x, &teleport_y, x, y);
 
           // And switch back
           set_current_board_ext(mzx_world, cur_board);
@@ -4233,9 +4259,9 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           *break_pos = '\0';
 
         if(!ask_yes_no(mzx_world, question_buffer))
-          send_status = send_robot_id(mzx_world, id, "YES", 1);
+          send_status = send_robot_id(mzx_world, id, "YES", -2, 1);
         else
-          send_status = send_robot_id(mzx_world, id, "NO", 1);
+          send_status = send_robot_id(mzx_world, id, "NO", -2, 1);
 
         if(!send_status)
           gotoed = 1;
@@ -5201,7 +5227,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         int scroll_y = parse_param(mzx_world, p2, id);
         int n_scroll_x, n_scroll_y;
 
-        prefix_mid_xy(mzx_world, &scroll_x, &scroll_y, x, y);
+        prefix_mid_xy(mzx_world, -1, &scroll_x, &scroll_y, x, y);
 
         // scroll_x/scrolly target to put in upper left corner
         // offset off of player position
@@ -5407,7 +5433,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         if(!src_board->overlay_mode)
           setup_overlay(src_board, 3);
 
-        prefix_mid_xy(mzx_world, &put_x, &put_y, x, y);
+        prefix_mid_xy(mzx_world, -1, &put_x, &put_y, x, y);
         offset = put_x + (put_y * board_width);
 
         put_color =
@@ -5498,7 +5524,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         char current_char;
         char *overlay, *overlay_color;
 
-        prefix_mid_xy(mzx_world, &write_x, &write_y, x, y);
+        prefix_mid_xy(mzx_world, -1, &write_x, &write_y, x, y);
         offset = write_x + (write_y * board_width);
 
         tr_msg(mzx_world, write_string, id, string_buffer);

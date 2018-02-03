@@ -7180,6 +7180,10 @@ to determine which player character to display.
 
 The x or y coordinate of the player, respectively.
 
+~BPLAYER_COUNT (read-only)
+
+The number of players potentially in this game.
+
 $Robot Counters
 :rob:
 ~BPLAYERDIST (read-only, local)
@@ -7292,6 +7296,20 @@ as LOCAL1.
 
 ~BGOOP_WALK (local)
 Controls whether the Robot can walk on goop or not.
+
+~BPLAYER_INDEX (local)
+
+Player indices for multiplayer games. PLAYER_INDEX is set on an
+action which can be player-caused. If the action is not
+player-caused, this will be -1. Otherwise, it will be a number
+from 0 inclusive to PLAYER_COUNT exclusive.
+
+Setting PLAYER_INDEX also allows certain actions on players to
+be applied to a single player. In cases where information is
+being read, and this is -1, this returns the information for
+the first player and any players still attached to the first.
+player. Where information is being written or actions are being
+taken, and this is -1, this affects all players.
 
 $Board Counters
 :brd:

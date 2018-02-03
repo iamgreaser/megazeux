@@ -443,7 +443,7 @@ static void apply_board_undo(struct undo_frame *f)
 
   // Can't overwrite the player, so move the player first
   if(current->move_player)
-    place_player_xy(mzx_world,
+    place_player_xy(mzx_world, -1,
      current->prev_player_x, current->prev_player_y);
 
   switch(f->type)
@@ -490,7 +490,7 @@ static void apply_board_redo(struct undo_frame *f)
 
   // Copy won't overwrite the player, so move the player first
   if(current->move_player)
-    place_player_xy(current->mzx_world,
+    place_player_xy(current->mzx_world, -1,
      current->current_player_x, current->current_player_y);
 
   switch(f->type)

@@ -994,7 +994,7 @@ static void do_block_command(struct world *mzx_world, int block_command,
          (mzx_world->player[0].y < (block_y + block_height)) &&
          (block_board == dest_board))
         {
-          place_player_xy(mzx_world,
+          place_player_xy(mzx_world, -1,
            mzx_world->player[0].x - block_x + dest_x,
            mzx_world->player[0].y - block_y + dest_y);
         }
@@ -4123,8 +4123,8 @@ static void __edit_world(struct world *mzx_world, int reload_curr_file)
             src_board = mzx_world->current_board;
 
             set_counter(mzx_world, "TIME", src_board->time_limit, 0);
-            send_robot_def(mzx_world, 0, LABEL_JUSTENTERED);
-            send_robot_def(mzx_world, 0, LABEL_JUSTLOADED);
+            send_robot_def(mzx_world, 0, LABEL_JUSTENTERED, -1);
+            send_robot_def(mzx_world, 0, LABEL_JUSTLOADED, -1);
             find_player(mzx_world);
 
             mzx_world->player_restart_x = mzx_world->player[0].x;

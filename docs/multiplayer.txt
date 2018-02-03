@@ -1,0 +1,58 @@
+Multiplayer mode for MegaZeux
+Technical notes
+by GreaseMonkey, 2018
+vim: set syntax=markdown sts=2 sw=2 et :
+
+## Building it
+
+Feed the `--enable-multiplayer` flag into `./config.sh` .
+
+## Background
+
+There are very few MegaZeux games with multiplayer support.
+
+That, and the idea of MZXNet has been tossed around since at least 2009.
+
+I decided to come up with a way to play the original Zeux series in multiplayer for the hell of it. Thought it would be fun. Then I had to come up with a way that it would actually possibly work at all...
+
+And thus my journey begins into the world of player clones in MegaZeux. As it turns out, they're pretty pathetic. The stuff you can do with player clones in ZZT are things you can do using Robotic, whereas the stuff you can do with player clones in MegaZeux seem to be doable in ZZT-OOP aside from the pushable bit.
+
+----
+
+## Design notes
+
+Basic concepts:
+
+* There is a main player, which I often refer to as the first player.
+* There are other players, which I often refer to as nonfirst players.
+* Nonfirst players can be tied to the first player, or they can be split off from it.
+* To split a nonfirst player off the first player, a nonfirst player only needs to move.
+* Certain actions will "unite" all players into one position and rejoin them all back to the first player.
+
+Technical aspects:
+
+* A Player object uses its parameter to indicate which underlying player index it belongs to.
+
+### Things that unite the players
+
+* Board transitions
+  * Cases:
+    * Taking a passage or equivalent
+    * Touching the board edge and exiting to the next board
+  * Unification mostly happens here because I'm having player clone issues which need to be resolved. While there's a lot more potential 
+* Robots put a player somewhere
+* `die item` on a robot
+  * If I could distinguish this one nicely per player I'll make this no longer unite.
+    * Robots need a way to determine which player touched or shot them. I'll need another counter for this.
+
+----
+
+## Bugs to squish
+
+* Player clones
+  * [ ] Players pushing other players
+    * Using a workaround for this but I'd prefer it if you could push players around
+  * [ ] Players pushing other players on the other side of a transporter
+  * [ ] Robots pushing players pushing other players
+
+

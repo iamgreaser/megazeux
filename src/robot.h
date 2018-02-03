@@ -102,15 +102,15 @@ CORE_LIBSPEC int duplicate_scroll(struct board *src_board,
 CORE_LIBSPEC int duplicate_sensor(struct board *src_board,
  struct sensor *cur_sensor);
 CORE_LIBSPEC int send_robot_id_def(struct world *mzx_world, int robot_id,
- const char *mesg, int ignore_lock);
+ const char *mesg, int player_index, int ignore_lock);
 CORE_LIBSPEC void send_robot_all_def(struct world *mzx_world, const char *mesg);
 CORE_LIBSPEC void send_robot_def(struct world *mzx_world, int robot_id,
- int mesg_id);
+ int mesg_id, int player_index);
 CORE_LIBSPEC void optimize_null_objects(struct board *src_board);
 
 CORE_LIBSPEC int place_at_xy(struct world *mzx_world, enum thing id,
  int color, int param, int x, int y);
-CORE_LIBSPEC int place_player_xy(struct world *mzx_world, int x, int y);
+CORE_LIBSPEC int place_player_xy(struct world *mzx_world, int player_index, int x, int y);
 CORE_LIBSPEC void setup_overlay(struct board *src_board, int mode);
 CORE_LIBSPEC void replace_player(struct world *mzx_world, int player_index);
 
@@ -143,9 +143,9 @@ void clear_sensor(struct sensor *cur_sensor);
 void reallocate_scroll(struct scroll *scroll, size_t size);
 
 CORE_LIBSPEC void send_robot(struct world *mzx_world, char *name,
- const char *mesg, int ignore_lock);
+ const char *mesg, int player_index, int ignore_lock);
 CORE_LIBSPEC int send_robot_id(struct world *mzx_world, int id,
- const char *mesg, int ignore_lock);
+ const char *mesg, int player_index, int ignore_lock);
 CORE_LIBSPEC char *tr_msg_ext(struct world *mzx_world, char *mesg, int id,
  char *buffer, char terminating_char);
 
@@ -157,8 +157,8 @@ int send_robot_self(struct world *mzx_world, struct robot *src_robot,
 int move_dir(struct board *src_board, int *x, int *y, enum dir dir);
 void prefix_first_last_xy(struct world *mzx_world, int *fx, int *fy,
  int *lx, int *ly, int robotx, int roboty);
-void prefix_mid_xy_unbound(struct world *mzx_world, int *mx, int *my, int x, int y);
-void prefix_mid_xy(struct world *mzx_world, int *mx, int *my, int x, int y);
+void prefix_mid_xy_unbound(struct world *mzx_world, int player_index, int *mx, int *my, int x, int y);
+void prefix_mid_xy(struct world *mzx_world, int player_index, int *mx, int *my, int x, int y);
 void prefix_last_xy_var(struct world *mzx_world, int *lx, int *ly,
  int robotx, int roboty, int width, int height);
 void prefix_mid_xy_var(struct world *mzx_world, int *mx, int *my,

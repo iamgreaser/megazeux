@@ -108,6 +108,12 @@ struct robot
   // Local counters - store in save file
   int local[32];
 
+  // Player selection.
+  // This gets set on an external action.
+  // -1 means the action was not player-caused.
+  // Use -1 for PLAYER_INDEX to affect all players.
+  int player_index;
+
 #ifdef CONFIG_EDITOR
   // A mapping of bytecode lines to source lines.
   struct command_mapping *command_map;
