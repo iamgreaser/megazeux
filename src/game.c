@@ -454,6 +454,12 @@ static void update_player(struct world *mzx_world, int player_index)
     return; // Nothing special
   }
 
+  // Don't auto-move players united to first player
+  if(player_index != 0)
+    if(mzx_world->player[player_index].x == mzx_world->player[0].x)
+      if(mzx_world->player[player_index].y == mzx_world->player[0].y)
+        return;
+
   switch(under_id)
   {
     case ICE:
