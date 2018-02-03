@@ -1430,18 +1430,19 @@ static int update(struct world *mzx_world, int game, int *fadein)
   for(player_index = 0; player_index < mzx_world->player_count; player_index++)
   {
     update_player(mzx_world, player_index); // Ice, fire, water, lava
-  }
 
-  if(mzx_world->wind_dur > 0)
-  {
-    // Wind
-    int wind_dir = Random(9);
-    if(wind_dir < 4)
+    if(mzx_world->wind_dur > 0)
     {
-      // No wind this turn if above 3
-      src_board->player_last_dir[player_index] =
-       (src_board->player_last_dir[player_index] & 0xF0) + wind_dir;
-      move_player(mzx_world, player_index, wind_dir);
+      // Wind
+      int wind_dir = Random(9);
+      if(wind_dir < 4)
+      {
+        // No wind this turn if above 3
+        src_board->player_last_dir[player_index] =
+         (src_board->player_last_dir[player_index] & 0xF0) + wind_dir;
+        move_player(mzx_world, player_index, wind_dir);
+        find_single_player(mzx_world, player_index);
+      }
     }
   }
 
