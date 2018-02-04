@@ -356,11 +356,11 @@ int place_player_xy(struct world *mzx_world, int player_index, int x, int y)
       step_sensor(mzx_world, dparam);
     }
 
+    id_remove_top(mzx_world, mzx_world->player[player_index].x, mzx_world->player[player_index].y);
     if(player_index == 0
      || x != mzx_world->player[0].x
      || y != mzx_world->player[0].y)
     {
-      id_remove_top(mzx_world, mzx_world->player[player_index].x, mzx_world->player[player_index].y);
       id_place(mzx_world, x, y, PLAYER, 0, player_index);
 
       debug("Place player %d: %d %d -> %d %d\n",

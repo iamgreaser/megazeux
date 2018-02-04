@@ -54,6 +54,7 @@ Technical aspects:
     * Using a workaround for this but I'd prefer it if you could push players around
   * [ ] Players pushing other players on the other side of a transporter
   * [ ] Robots pushing players pushing other players
+  * [x] `put player`
   * [x] Edge transitions?!
     * `move_player`: Unite on edge touch
     * `move_player`: Prevent players from moving if `target_where` is not `TARGET_NONE`
@@ -64,6 +65,7 @@ Technical aspects:
   * [x] Floor gets eaten on a `teleport player`
     * `place_player_xy` now moves all united players with the first player
     * `place_player_xy` now does the top tile remove AFTER checking if it's player 0 or not united
+      * ROLLED THIS LINE BACK - this caused a player clone regression
   * Noticed while attempting to 1-player-run Forest of Ruin.
   * A better approach for unsplit players is to have a flag indicating a non-first player is active, and clear this when uniting all players.
 
