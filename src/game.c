@@ -854,7 +854,14 @@ static void place_player(struct world *mzx_world, int player_index, int x, int y
       id_remove_top(mzx_world, mzx_world->player[player_index].x, mzx_world->player[player_index].y);
     }
   }
-  id_place(mzx_world, x, y, PLAYER, 0, player_index);
+
+  if((player_index == 0)
+   || (x != mzx_world->player[0].x)
+   || (y != mzx_world->player[0].y))
+  {
+    id_place(mzx_world, x, y, PLAYER, 0, player_index);
+  }
+
   if(player_index == 0)
   {
     // Move unsplit players in lockstep
@@ -3735,6 +3742,7 @@ int move_player(struct world *mzx_world, int player_index, int dir)
     if(d_flag & A_ENTRANCE)
     {
       // Entrance
+      int i;
       int d_board = src_board->level_param[d_offset];
       play_sfx(mzx_world, 37);
       // Can move?
@@ -3749,7 +3757,11 @@ int move_player(struct world *mzx_world, int player_index, int dir)
         mzx_world->target_id = d_id;
       }
 
-      place_player(mzx_world, base_player_index, new_x, new_y, dir);
+      find_player(mzx_world);
+      for(i = 0; i < mzx_world->player_count; i++)
+      {
+        place_player(mzx_world, i, new_x, new_y, dir);
+      }
     }
     else
 
