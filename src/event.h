@@ -31,7 +31,7 @@ __M_BEGIN_DECLS
 
 #define KEY_REPEAT_STACK_SIZE 32
 
-#define STATUS_NUM_KEYCODES 512
+#define STATUS_NUM_KEYCODES 2048
 
 #define MOUSE_BUTTON(x)         (1 << ((x) - 1))
 #define MOUSE_BUTTON_LEFT       1
@@ -98,7 +98,7 @@ struct buffered_status
   bool mouse_moved;
   bool exit;
   Sint8 axis[16][16];
-  Uint8 keymap[512];
+  Uint8 keymap[2048];
 };
 
 struct input_status

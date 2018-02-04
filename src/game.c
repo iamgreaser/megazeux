@@ -132,12 +132,42 @@ static bool editing = true;
 static const char cw_offs[8] = { 10, 2, 6, 4, 5, 1, 9, 8 };
 static const char ccw_offs[8] = { 10, 8, 9, 1, 5, 4, 6, 2 };
 
-static const int player_key_down[MAX_PLAYERS] = {IKEY_DOWN, IKEY_KP5};
-static const int player_key_left[MAX_PLAYERS] = {IKEY_LEFT, IKEY_KP4};
-static const int player_key_right[MAX_PLAYERS] = {IKEY_RIGHT, IKEY_KP6};
-static const int player_key_shoot[MAX_PLAYERS] = {IKEY_SPACE, IKEY_KP_PLUS};
-static const int player_key_bomb[MAX_PLAYERS] = {IKEY_DELETE, IKEY_KP_MINUS};
-static const int player_key_up[MAX_PLAYERS] = {IKEY_UP, IKEY_KP8};
+static const int player_key_down[MAX_PLAYERS] = {
+  IKEY_DOWN,
+  IKEY_P01_DOWN,
+  IKEY_P02_DOWN,
+  IKEY_P03_DOWN,
+};
+static const int player_key_left[MAX_PLAYERS] = {
+  IKEY_LEFT,
+  IKEY_P01_LEFT,
+  IKEY_P02_LEFT,
+  IKEY_P03_LEFT,
+};
+static const int player_key_right[MAX_PLAYERS] = {
+  IKEY_RIGHT,
+  IKEY_P01_RIGHT,
+  IKEY_P02_RIGHT,
+  IKEY_P03_RIGHT,
+};
+static const int player_key_shoot[MAX_PLAYERS] = {
+  IKEY_SPACE,
+  IKEY_P01_SHOOT,
+  IKEY_P02_SHOOT,
+  IKEY_P03_SHOOT,
+};
+static const int player_key_bomb[MAX_PLAYERS] = {
+  IKEY_DELETE,
+  IKEY_P01_BOMB,
+  IKEY_P02_BOMB,
+  IKEY_P03_BOMB,
+};
+static const int player_key_up[MAX_PLAYERS] = {
+  IKEY_UP,
+  IKEY_P01_UP,
+  IKEY_P02_UP,
+  IKEY_P03_UP,
+};
 
 // Whether to update a palette from robot activity
 bool pal_update;
