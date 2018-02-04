@@ -1871,7 +1871,66 @@ static int update(struct world *mzx_world, int game, int *fadein)
     }
     else
     {
-      draw_game_window(src_board, top_x, top_y);
+      // Do split screen?
+      int min_player_x = mzx_world->player[0].x;
+      int min_player_y = mzx_world->player[0].y;
+      int max_player_x = mzx_world->player[0].x;
+      int max_player_y = mzx_world->player[0].y;
+      int base_viewport_x = src_board->viewport_x;
+      int base_viewport_y = src_board->viewport_y;
+      int base_viewport_width = src_board->viewport_width;
+      int base_viewport_height = src_board->viewport_height;
+      int player_range_width, player_range_height;
+
+      for(player_index = 1; player_index < mzx_world->player_count; player_index++)
+      {
+        min_player_x = MIN(min_player_x, mzx_world->player[player_index].x);
+        min_player_y = MIN(min_player_y, mzx_world->player[player_index].y);
+        max_player_x = MAX(max_player_x, mzx_world->player[player_index].x);
+        max_player_y = MAX(max_player_y, mzx_world->player[player_index].y);
+      }
+
+      player_range_width = max_player_x - min_player_x + 1;
+      player_range_height = max_player_y - min_player_y + 1;
+
+      if((player_range_width  > base_viewport_width)
+       ||(player_range_height > base_viewport_height)
+       || false)
+      {
+        // Do split screen
+        for(player_index = 0; player_index < mzx_world->player_count; player_index++)
+        {
+          int player_x = mzx_world->player[player_index].x;
+          int player_y = mzx_world->player[player_index].y;
+          int min_view_x = (((player_index + 0) * base_viewport_width * 2 + 1)
+            / (2 * mzx_world->player_count));
+          int max_view_x = (((player_index + 1) * base_viewport_width * 2 + 1)
+            / (2 * mzx_world->player_count));
+          int view_width = max_view_x - min_view_x;
+          int view_height = base_viewport_height;
+          int new_top_x = MAX(0,
+            MIN(board_width - view_width,
+              player_x - view_width/2));
+          int new_top_y = MAX(0,
+            MIN(board_height - view_height,
+              player_y - view_height/2));
+          src_board->viewport_x = base_viewport_x + min_view_x;
+          src_board->viewport_y = base_viewport_y;
+          src_board->viewport_width = view_width;
+          src_board->viewport_height = view_height;
+          draw_game_window(src_board, new_top_x, new_top_y);
+        }
+      }
+      else
+      {
+        // Unsplit view
+        draw_game_window(src_board, top_x, top_y);
+      }
+
+      src_board->viewport_x = base_viewport_x;
+      src_board->viewport_y = base_viewport_y;
+      src_board->viewport_width = base_viewport_width;
+      src_board->viewport_height = base_viewport_height;
     }
     select_layer(OVERLAY_LAYER);
 
