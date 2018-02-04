@@ -3622,6 +3622,12 @@ int move_player(struct world *mzx_world, int player_index, int dir)
   int new_y = player_y;
   int edge = 0;
 
+  // Forbid movement if teleporting
+  if(mzx_world->target_where != TARGET_NONE)
+  {
+    return 1;
+  }
+
   if(player_index == -1)
   {
     int i;
@@ -3664,6 +3670,8 @@ int move_player(struct world *mzx_world, int player_index, int dir)
   {
     // Hit an edge, teleport to another board?
     int board_dir = src_board->board_dir[dir];
+    int other_index;
+
     // Board must be valid
     if((board_dir == NO_BOARD) ||
      (board_dir >= mzx_world->num_boards) ||
@@ -3676,8 +3684,6 @@ int move_player(struct world *mzx_world, int player_index, int dir)
     mzx_world->target_where = TARGET_POSITION;
     mzx_world->target_x = player_x;
     mzx_world->target_y = player_y;
-
-    // FIXME: need to delete all players but one
 
     switch(dir)
     {
@@ -3709,6 +3715,13 @@ int move_player(struct world *mzx_world, int player_index, int dir)
     }
     src_board->player_last_dir[player_index] =
      (src_board->player_last_dir[player_index] & 0xF0) + dir + 1;
+
+    // Unite all players
+    for(other_index = 0; other_index < mzx_world->player_count; other_index++)
+    {
+      place_player(mzx_world, other_index, player_x, player_y, dir);
+    }
+
     return 0;
   }
   else
