@@ -866,14 +866,14 @@ static void place_player(struct world *mzx_world, int player_index, int x, int y
         mzx_world->player[other_index].x = x;
         mzx_world->player[other_index].y = y;
         src_board->player_last_dir[other_index] =
-         (src_board->player_last_dir[other_index] & 240) | (dir + 1);
+         (src_board->player_last_dir[other_index] & 0xF0) | (dir + 1);
       }
     }
   }
   mzx_world->player[player_index].x = x;
   mzx_world->player[player_index].y = y;
   src_board->player_last_dir[player_index] =
-   (src_board->player_last_dir[player_index] & 240) | (dir + 1);
+   (src_board->player_last_dir[player_index] & 0xF0) | (dir + 1);
 }
 
 static void give_potion(struct world *mzx_world, enum potion type)

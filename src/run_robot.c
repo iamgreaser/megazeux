@@ -356,11 +356,11 @@ int place_player_xy(struct world *mzx_world, int player_index, int x, int y)
       step_sensor(mzx_world, dparam);
     }
 
-    id_remove_top(mzx_world, mzx_world->player[player_index].x, mzx_world->player[player_index].y);
     if(player_index == 0
      || x != mzx_world->player[0].x
      || y != mzx_world->player[0].y)
     {
+      id_remove_top(mzx_world, mzx_world->player[player_index].x, mzx_world->player[player_index].y);
       id_place(mzx_world, x, y, PLAYER, 0, player_index);
 
       debug("Place player %d: %d %d -> %d %d\n",
@@ -369,13 +369,26 @@ int place_player_xy(struct world *mzx_world, int player_index, int x, int y)
         mzx_world->player[player_index].y,
         x, y);
     }
-    mzx_world->player[player_index].x = x;
-    mzx_world->player[player_index].y = y;
 
     if(player_index == 0)
     {
-      success = 1;
+      int other_index;
+
+      for(other_index = 1; other_index < mzx_world->player_count; other_index++)
+      {
+        if((mzx_world->player[other_index].x == mzx_world->player[0].x)
+         && (mzx_world->player[other_index].y == mzx_world->player[0].y))
+        {
+          mzx_world->player[other_index].x = x;
+          mzx_world->player[other_index].y = y;
+        }
+      }
     }
+
+    mzx_world->player[player_index].x = x;
+    mzx_world->player[player_index].y = y;
+
+    success = 1;
   }
 
   return success;
