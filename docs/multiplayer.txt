@@ -66,6 +66,7 @@ Technical aspects:
     * `place_player_xy` now moves all united players with the first player
     * `place_player_xy` now does the top tile remove AFTER checking if it's player 0 or not united
       * ROLLED THIS LINE BACK - this caused a player clone regression
+  * [ ] Chair got eaten in Chronos w/ 2 players, not sure why yet
   * Noticed while attempting to 1-player-run Forest of Ruin.
   * A better approach for unsplit players is to have a flag indicating a non-first player is active, and clear this when uniting all players.
 

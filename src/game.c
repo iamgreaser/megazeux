@@ -3561,6 +3561,26 @@ void calculate_xytop(struct world *mzx_world, int *x, int *y)
   int viewport_width = src_board->viewport_width;
   int viewport_height = src_board->viewport_height;
   int locked_y = src_board->locked_y;
+  int player_x = mzx_world->player[0].x;
+  int player_y = mzx_world->player[0].y;
+  int players_active = 1;
+  int player_index;
+
+  // Get average position of all split players
+  for(player_index = 1; player_index < mzx_world->player_count; player_index++)
+  {
+    int next_x = mzx_world->player[player_index].x;
+    int next_y = mzx_world->player[player_index].y;
+
+    if(next_x != mzx_world->player[0].x || next_y != mzx_world->player[0].y)
+    {
+      player_x += next_x;
+      player_y += next_y;
+      players_active += 1;
+    }
+  }
+  player_x = (player_x * 2 + 1) / (players_active * 2);
+  player_y = (player_y * 2 + 1) / (players_active * 2);
 
   // Calculate xy top from player position and scroll view pos, or
   // as static position if set.
@@ -3573,8 +3593,8 @@ void calculate_xytop(struct world *mzx_world, int *x, int *y)
   {
     // Calculate from player position
     // Center screen around player, add scroll factor
-    nx = mzx_world->player[0].x - (viewport_width / 2);
-    ny = mzx_world->player[0].y - (viewport_height / 2);
+    nx = player_x - (viewport_width / 2);
+    ny = player_y - (viewport_height / 2);
 
     if(nx < 0)
       nx = 0;
