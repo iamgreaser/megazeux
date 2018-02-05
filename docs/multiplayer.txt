@@ -58,6 +58,11 @@ Technical aspects:
   * [x] Edge transitions?!
     * `move_player`: Unite on edge touch
     * `move_player`: Prevent players from moving if `target_where` is not `TARGET_NONE`
+* Player selection issues
+  * Nonfunctional:
+    * [ ] `playerx` / `playery`
+  * Broken:
+    * [x] `die item` puts first player in top-left corner
 * [ ] Player sometimes eats the floor
   * [x] Entrance gets eaten when nonfirst enters it
     * `move_player`: All players are moved, starting from the first player, to an entrance

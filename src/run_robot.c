@@ -335,9 +335,13 @@ int place_player_xy(struct world *mzx_world, int player_index, int x, int y)
   if((mzx_world->player[player_index].x != x) || (mzx_world->player[player_index].y != y))
   {
     struct board *src_board = mzx_world->current_board;
+    int poffset = (mzx_world->player[player_index].x
+     + (mzx_world->player[player_index].y * src_board->board_width));
     int offset = x + (y * src_board->board_width);
     int did = src_board->level_id[offset];
     int dparam = src_board->level_param[offset];
+    int pid = src_board->level_id[poffset];
+    int pparam = src_board->level_param[poffset];
 
     if(is_robot(did))
     {
@@ -356,7 +360,11 @@ int place_player_xy(struct world *mzx_world, int player_index, int x, int y)
       step_sensor(mzx_world, dparam);
     }
 
-    id_remove_top(mzx_world, mzx_world->player[player_index].x, mzx_world->player[player_index].y);
+    if(pid == PLAYER && pparam == player_index)
+    {
+      id_remove_top(mzx_world, mzx_world->player[player_index].x, mzx_world->player[player_index].y);
+    }
+
     if(player_index == 0
      || x != mzx_world->player[0].x
      || y != mzx_world->player[0].y)
