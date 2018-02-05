@@ -50,9 +50,10 @@ Technical aspects:
 ## Bugs to squish
 
 * Player clones
-  * [ ] Players pushing other players
+  * [x] Players pushing other players
     * Using a workaround for this but I'd prefer it if you could push players around
-  * [ ] Players pushing other players on the other side of a transporter
+      * Workaround removed. Have fun.
+  * [x] Players pushing other players on the other side of a transporter
   * [ ] Robots pushing players pushing other players
   * [x] `put player`
   * [x] Edge transitions?!

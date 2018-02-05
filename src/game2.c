@@ -2281,6 +2281,8 @@ int push(struct world *mzx_world, int x, int y, int dir, int checking)
 
   play_sfx(mzx_world, 26);
 
+  find_player(mzx_world);
+
   return 0;
 }
 

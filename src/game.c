@@ -3842,13 +3842,6 @@ int move_player(struct world *mzx_world, int player_index, int dir)
     int d_flag = flags[(int)d_id];
     int other_idx;
 
-    // Forbid pushing other players
-    for(other_idx = 0; other_idx < mzx_world->player_count; other_idx++)
-    {
-      if(new_x == mzx_world->player[other_idx].x && new_y == mzx_world->player[other_idx].y)
-        return 0;
-    }
-
     if(d_flag & A_SPEC_STOOD)
     {
       // Sensor
