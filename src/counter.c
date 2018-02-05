@@ -320,13 +320,15 @@ static int thisy_read(struct world *mzx_world,
 static int playerx_read(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int id)
 {
-  return mzx_world->player[0].x;
+  int player_index = (mzx_world->current_board->robot_list[id])->player_index;
+  return mzx_world->player[player_index].x;
 }
 
 static int playery_read(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int id)
 {
-  return mzx_world->player[0].y;
+  int player_index = (mzx_world->current_board->robot_list[id])->player_index;
+  return mzx_world->player[player_index].y;
 }
 
 static int this_char_read(struct world *mzx_world,

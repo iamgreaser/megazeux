@@ -62,7 +62,7 @@ Technical aspects:
     * `move_player`: Prevent players from moving if `target_where` is not `TARGET_NONE`
 * Player selection issues
   * Nonfunctional:
-    * [ ] `playerx` / `playery`
+    * [x] `playerx` / `playery`
   * Broken:
     * [x] `die item` puts first player in top-left corner
 * [ ] Player sometimes eats the floor
