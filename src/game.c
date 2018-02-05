@@ -3840,7 +3840,6 @@ int move_player(struct world *mzx_world, int player_index, int dir)
     enum thing d_id = (enum thing)src_board->level_id[d_offset];
     enum thing u_id = (enum thing)src_board->level_under_id[d_offset];
     int d_flag = flags[(int)d_id];
-    int other_idx;
 
     if(d_flag & A_SPEC_STOOD)
     {
@@ -4517,7 +4516,7 @@ void find_single_player(struct world *mzx_world, int player_index)
   offset = (mzx_world->player[player_index].x
    + (mzx_world->player[player_index].y * board_width));
 
-  if((enum thing)level_id[offset] != PLAYER)
+  if((enum thing)level_id[offset] != PLAYER || level_param[offset] != player_index)
   {
     int xmin, xmax;
     int ymin, ymax;
@@ -4537,11 +4536,30 @@ void find_single_player(struct world *mzx_world, int player_index)
         {
           if(level_param[offset] == player_index)
           {
-            debug("find_single_player(%d): 5x5 check\n", player_index);
+            //debug("find_single_player(%d): 5x5 check\n", player_index);
             mzx_world->player[player_index].x = dx;
             mzx_world->player[player_index].y = dy;
             return;
           }
+        }
+      }
+    }
+
+    // SPEED HACK
+    if(player_index != 0
+     && mzx_world->player[player_index].x == mzx_world->player[0].x
+     && mzx_world->player[player_index].y == mzx_world->player[0].y)
+    {
+      offset = (mzx_world->player[player_index].x
+       + (mzx_world->player[player_index].y * board_width));
+      if((enum thing)level_id[offset] == PLAYER)
+      {
+        if(level_param[offset] == 0)
+        {
+          //debug("find_single_player(%d): recheck %d %d %d\n", player_index, level_id[offset], PLAYER, level_param[offset]);
+          mzx_world->player[player_index].x = mzx_world->player[0].x;
+          mzx_world->player[player_index].y = mzx_world->player[0].y;
+          return;
         }
       }
     }
