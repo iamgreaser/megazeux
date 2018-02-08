@@ -321,14 +321,14 @@ static int playerx_read(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int id)
 {
   int player_index = (mzx_world->current_board->robot_list[id])->player_index;
-  return mzx_world->player[player_index].x;
+  return mzx_world->player[MAX(0,player_index)].x;
 }
 
 static int playery_read(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int id)
 {
   int player_index = (mzx_world->current_board->robot_list[id])->player_index;
-  return mzx_world->player[player_index].y;
+  return mzx_world->player[MAX(0,player_index)].y;
 }
 
 static int this_char_read(struct world *mzx_world,
