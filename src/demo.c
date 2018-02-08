@@ -1,0 +1,269 @@
+/* MegaZeux
+ *
+ * Copyright (C) 2018 GreaseMonkey
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+// Demo recording and playback routines.
+
+#include "const.h"
+#include "demo.h"
+#include "event.h"
+#include "util.h"
+
+extern struct buffered_status *load_status_nonconst(void);
+
+//
+// GENERAL
+//
+
+static void demo_clear_frame(struct world *mzx_world, struct demo_frame *frame)
+{
+  memset(frame, 0, sizeof(*frame));
+  frame->flags = (0
+    | DEMO_FRAME_IS_FIRST
+    );
+  frame->timestamp_usec = 0;
+  frame->random_seed = 0;
+  frame->mod_order = 0;
+  frame->mod_position = 0;
+}
+
+int demo_init(struct world *mzx_world)
+{
+  struct demo_runtime *demo = &mzx_world->demo;
+
+  // Clear frames
+  demo_clear_frame(mzx_world, &(demo->previous_frame));
+  demo_clear_frame(mzx_world, &(demo->current_frame));
+
+  // Clear file pointer
+  demo->fp = NULL;
+
+  // Clear playing / recording status
+  demo->playing = false;
+  demo->recording = false;
+
+  return 0;
+}
+
+int demo_deinit(struct world *mzx_world)
+{
+  struct demo_runtime *demo = &mzx_world->demo;
+
+  // Close file and clear pointer if necessary
+  if(demo->fp != NULL)
+  {
+    fclose(demo->fp);
+    demo->fp = NULL;
+  }
+
+  // Reinit to clear everything else
+  demo_init(mzx_world);
+
+  return 0;
+}
+
+int demo_start_frame(struct world *mzx_world)
+{
+  if(mzx_world->demo.playing)
+  {
+    return demo_play_start_frame(mzx_world);
+  }
+
+  else if(mzx_world->demo.recording)
+  {
+    return demo_record_start_frame(mzx_world);
+  }
+
+  else
+  {
+    return 0;
+  }
+}
+
+int demo_end_frame(struct world *mzx_world)
+{
+  if(mzx_world->demo.playing)
+  {
+    return demo_play_end_frame(mzx_world);
+  }
+
+  else if(mzx_world->demo.recording)
+  {
+    return demo_record_end_frame(mzx_world);
+  }
+
+  else
+  {
+    return 0;
+  }
+}
+
+//
+// RECORDING
+//
+
+int demo_record_init(struct world *mzx_world)
+{
+  struct demo_runtime *demo = &mzx_world->demo;
+
+  // Enable recording and open file
+  demo->recording = true;
+  demo->fp = fopen_unsafe("DEMOTEST.DMO", "wb");
+
+  return 0;
+}
+
+int demo_record_start_frame(struct world *mzx_world)
+{
+  struct demo_runtime *demo = &mzx_world->demo;
+  struct buffered_status *current_input = load_status_nonconst();
+  struct demo_frame *frame = &(demo->current_frame);
+
+  // Copy the new status over the old status
+  memcpy(
+    &(frame->buffer),
+    current_input,
+    sizeof(frame->buffer));
+
+  // TODO: fill other fields in
+
+  // Fetch latest seed
+  frame->random_seed = rng_get_seed();
+
+  // Serialise the new status
+  // Use RLE for encoding runs of no change
+  {
+    uint8_t *frame_old = (uint8_t *)&(demo->previous_frame);
+    uint8_t *frame_new = (uint8_t *)frame;
+    uint8_t rle_accum = 0;
+    FILE *fp = demo->fp;
+    size_t i;
+
+    for(i = 0; i < sizeof(*frame); i++)
+    {
+      if(rle_accum == 0xFF || frame_old[i] != frame_new[i])
+      {
+        fputc(rle_accum, fp);
+        fputc(frame_new[i], fp);
+        rle_accum = 0;
+      }
+      else
+      {
+        rle_accum += 1;
+      }
+    }
+
+    fputc(rle_accum, fp);
+  }
+
+  // Copy the new frame over the old one
+  memcpy(
+   &(demo->previous_frame),
+   &(demo->current_frame),
+   sizeof(demo->current_frame));
+
+  // Clear "is first frame" flag
+  frame->flags &= ~DEMO_FRAME_IS_FIRST;
+
+  return 0;
+}
+
+int demo_record_end_frame(struct world *mzx_world)
+{
+  return 0;
+}
+
+//
+// PLAYBACK
+//
+
+int demo_play_init(struct world *mzx_world)
+{
+  struct demo_runtime *demo = &mzx_world->demo;
+
+  // Enable playback and open file
+  demo->playing = true;
+  demo->fp = fopen_unsafe("DEMOTEST.DMO", "rb");
+
+  return 0;
+}
+
+int demo_play_start_frame(struct world *mzx_world)
+{
+  struct demo_runtime *demo = &mzx_world->demo;
+  struct demo_frame *frame = &(demo->current_frame);
+  struct buffered_status *current_input = load_status_nonconst();
+  unsigned long long got_seed;
+
+  // Copy the new frame over the old one
+  memcpy(
+   &(demo->previous_frame),
+   &(demo->current_frame),
+   sizeof(demo->current_frame));
+
+  // Deserialise the new status
+  // Use RLE for encoding runs of no change
+  {
+    uint8_t *frame_new = (uint8_t *)frame;
+    FILE *fp = demo->fp;
+    uint8_t rle_accum = fgetc(fp);
+    size_t i;
+
+    for(i = 0; i < sizeof(*frame); i++)
+    {
+      if(rle_accum == 0)
+      {
+        frame_new[i] = fgetc(fp);
+        rle_accum = fgetc(fp);
+      }
+      else
+      {
+        rle_accum -= 1;
+      }
+    }
+  }
+
+  // TODO: use other fields
+
+  // Update seed
+  got_seed = rng_get_seed();
+  if(got_seed != frame->random_seed)
+  {
+    if((frame->flags & DEMO_FRAME_IS_FIRST) == 0)
+    {
+      debug("DESYNC: Mismatched seed - have %016llX, got %016llX\n", got_seed, frame->random_seed);
+      // TODO: pop up an error message
+    }
+    rng_set_seed(frame->random_seed);
+  }
+
+  // Copy the new status over the old status
+  memcpy(
+    current_input,
+    &(frame->buffer),
+    sizeof(frame->buffer));
+
+  return 0;
+}
+
+int demo_play_end_frame(struct world *mzx_world)
+{
+  // Nothing, really.
+
+  return 0;
+}

@@ -35,19 +35,21 @@ static Uint32 last_update_time;
 
 struct input_status input;
 
-static Uint8 num_buffered_events = 1;
+static Uint8 num_buffered_events = 2;
 
 struct buffered_status *store_status(void)
 {
   return &input.buffer[input.store_offset];
 }
 
-#ifndef CONFIG_NDS
-static
-#endif
 const struct buffered_status *load_status(void)
 {
   return (const struct buffered_status *)&input.buffer[input.load_offset];
+}
+
+struct buffered_status *load_status_nonconst(void)
+{
+  return &input.buffer[input.load_offset];
 }
 
 static void bump_status(void)

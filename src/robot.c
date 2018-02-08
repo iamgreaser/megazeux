@@ -29,6 +29,7 @@
 #include "const.h"
 #include "error.h"
 #include "event.h"
+#include "demo.h"
 #include "expr.h"
 #include "game.h"
 #include "game2.h"
@@ -2727,7 +2728,7 @@ void robot_box_display(struct world *mzx_world, char *program,
     robot_frame(mzx_world, program + pos, id);
     update_screen();
 
-    update_event_status_delay();
+    UPDATE_EVENT_STATUS_DELAY_TICK();
     key = get_key(keycode_internal_wrt_numlock);
 
     // Exit event--mimic Escape

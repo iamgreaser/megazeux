@@ -27,6 +27,7 @@ __M_BEGIN_DECLS
 #include "board_struct.h"
 #include "robot_struct.h"
 #include "counter_struct.h"
+#include "demo_struct.h"
 #include "sprite_struct.h"
 #include "configure.h"
 
@@ -165,6 +166,9 @@ struct world
   // Not part of world/save files, but runtime globals
   struct player_runtime player[MAX_PLAYERS];
   int player_count;
+
+  // Demo recording / playback
+  struct demo_runtime demo;
 
   // For moving the player between boards
   enum board_target target_where;

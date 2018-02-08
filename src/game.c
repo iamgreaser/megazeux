@@ -43,6 +43,7 @@
 #include "data.h"
 #include "const.h"
 #include "game.h"
+#include "demo.h"
 #include "window.h"
 #include "graphics.h"
 #include "counter.h"
@@ -1467,6 +1468,9 @@ static int update(struct world *mzx_world, int game, int *fadein)
   else
     slowed = 0;
 
+  // Update demo: Start frame
+  demo_start_frame(mzx_world);
+
   // Update
   update_variables(mzx_world, slowed);
   player_index = 0;
@@ -2129,6 +2133,9 @@ static int update(struct world *mzx_world, int game, int *fadein)
       break;
   }
 
+  // Update demo: End frame
+  demo_end_frame(mzx_world);
+
   if(mzx_world->target_where != TARGET_NONE)
   {
     int saved_player_last_dir = src_board->player_last_dir[0];
@@ -2404,12 +2411,31 @@ __editor_maybe_static void play_game(struct world *mzx_world)
   struct board *src_board;
   int fadein = 1;
   struct config_info *conf = &mzx_world->conf;
+  static bool demo_test_playing = false;
 
   // Main game loop
   // Mouse remains hidden unless menu/etc. is invoked
 
   set_context(CTX_PLAY_GAME);
 
+
+  // DEMO TEST - FIXME: DO THIS SANELY
+  if(demo_test_playing)
+  {
+    demo_deinit(mzx_world);
+    demo_init(mzx_world);
+    demo_play_init(mzx_world);
+    demo_test_playing = false;
+    debug("Starting demo PLAYBACK\n");
+  }
+  else
+  {
+    demo_deinit(mzx_world);
+    demo_init(mzx_world);
+    demo_record_init(mzx_world);
+    demo_test_playing = true;
+    debug("Starting demo RECORDING\n");
+  }
   do
   {
     focus_on_player(mzx_world);
@@ -2428,10 +2454,10 @@ __editor_maybe_static void play_game(struct world *mzx_world)
         break;
       }
 
-      update_event_status();
+      UPDATE_EVENT_STATUS_TICK();
       continue;
     }
-    update_event_status();
+    UPDATE_EVENT_STATUS_TICK();
 
     src_board = mzx_world->current_board;
 
@@ -2494,7 +2520,7 @@ __editor_maybe_static void play_game(struct world *mzx_world)
             m_show();
             help_system(mzx_world);
 
-            update_event_status();
+            UPDATE_EVENT_STATUS_TICK();
           }
           break;
         }
@@ -2510,7 +2536,7 @@ __editor_maybe_static void play_game(struct world *mzx_world)
 
             game_settings(mzx_world);
 
-            update_event_status();
+            UPDATE_EVENT_STATUS_TICK();
           }
           break;
         }
@@ -2540,7 +2566,7 @@ __editor_maybe_static void play_game(struct world *mzx_world)
                 save_world(mzx_world, curr_sav, 1, WORLD_VERSION);
               }
 
-              update_event_status();
+              UPDATE_EVENT_STATUS_TICK();
             }
           }
           break;
@@ -2578,7 +2604,7 @@ __editor_maybe_static void play_game(struct world *mzx_world)
               fadein ^= 1;
             }
 
-            update_event_status();
+            UPDATE_EVENT_STATUS_TICK();
           }
           break;
         }
@@ -2769,7 +2795,7 @@ __editor_maybe_static void play_game(struct world *mzx_world)
             {
               debug_robot_config(mzx_world);
 
-              update_event_status();
+              UPDATE_EVENT_STATUS_TICK();
             }
           }
           // Debug counter editor
@@ -2779,7 +2805,7 @@ __editor_maybe_static void play_game(struct world *mzx_world)
             {
               debug_counters(mzx_world);
 
-              update_event_status();
+              UPDATE_EVENT_STATUS_TICK();
             }
           }
           break;
@@ -2817,7 +2843,7 @@ __editor_maybe_static void play_game(struct world *mzx_world)
 
             do
             {
-              update_event_status_delay();
+              UPDATE_EVENT_STATUS_DELAY_TICK();
               update_screen();
 
               key = get_key(keycode_internal_wrt_numlock);
@@ -2873,11 +2899,14 @@ __editor_maybe_static void play_game(struct world *mzx_world)
 
         exit = !confirm(mzx_world, "Quit playing- Are you sure?");
 
-        update_event_status();
+        UPDATE_EVENT_STATUS_TICK();
       }
     }
 
   } while(!exit);
+  demo_deinit(mzx_world);
+  demo_init(mzx_world);
+
   pop_context();
   vquick_fadeout();
   clear_sfx_queue();
@@ -2943,6 +2972,9 @@ void title_screen(struct world *mzx_world)
 
   src_board = mzx_world->current_board;
   draw_intro_mesg(mzx_world);
+
+  demo_init(mzx_world);
+  demo_start_frame(mzx_world);
 
   // Main game loop
 
@@ -3256,6 +3288,7 @@ void title_screen(struct world *mzx_world)
               clear_screen(32, 7);
             }
           }
+
           break;
         }
 
@@ -3485,6 +3518,9 @@ void title_screen(struct world *mzx_world)
       break;
 
   } while(!exit && !mzx_world->full_exit);
+
+  demo_end_frame(mzx_world);
+  demo_deinit(mzx_world);
 
   vquick_fadeout();
   clear_sfx_queue();

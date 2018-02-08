@@ -24,6 +24,7 @@
 #include <ctype.h>
 
 #include "event.h"
+#include "demo.h"
 #include "data.h"
 #include "scrdisp.h"
 #include "window.h"
@@ -179,7 +180,7 @@ void scroll_edit(struct world *mzx_world, struct scroll *scroll, int type)
     }
     else
     {
-      update_event_status_delay();
+      UPDATE_EVENT_STATUS_DELAY_TICK();
       key = get_key(keycode_internal_wrt_numlock);
     }
 
@@ -574,7 +575,7 @@ void help_display(struct world *mzx_world, char *help, int offs, char *file,
 
     update_screen();
 
-    update_event_status_delay();
+    UPDATE_EVENT_STATUS_DELAY_TICK();
 
     if(get_mouse_press())
     {

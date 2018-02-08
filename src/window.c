@@ -35,6 +35,7 @@
 
 #include "platform.h"
 #include "event.h"
+#include "demo.h"
 #include "helpsys.h"
 #include "sfx.h"
 #include "error.h"
@@ -951,7 +952,7 @@ int run_dialog(struct world *mzx_world, struct dialog *di)
     update_screen();
 
     current_element = di->elements[current_element_num];
-    update_event_status_delay();
+    UPDATE_EVENT_STATUS_DELAY_TICK();
     current_key = get_key(keycode_internal_wrt_numlock);
 
     new_key = 0;
