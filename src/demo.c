@@ -147,28 +147,44 @@ int demo_record_start_frame(struct world *mzx_world)
 
   // Serialise the new status
   // Use RLE for encoding runs of no change
+  // If any frames genuinely do not change, then mark them as unchanged
   {
     uint8_t *frame_old = (uint8_t *)&(demo->previous_frame);
     uint8_t *frame_new = (uint8_t *)frame;
-    uint8_t rle_accum = 0;
+    uint16_t rle_accum = 0;
     FILE *fp = demo->fp;
     size_t i;
 
-    for(i = 0; i < sizeof(*frame); i++)
+    if(!memcmp(frame_old, frame_new, sizeof(*frame)))
     {
-      if(rle_accum == 0xFF || frame_old[i] != frame_new[i])
-      {
-        fputc(rle_accum, fp);
-        fputc(frame_new[i], fp);
-        rle_accum = 0;
-      }
-      else
-      {
-        rle_accum += 1;
-      }
+      fputc(0xFF, fp); // Mark this as a blank frame
     }
+    else
+    {
+      for(i = 0; i < sizeof(*frame); i++)
+      {
+        if(rle_accum == 0x7EFF || frame_old[i] != frame_new[i] || i+1 == sizeof(*frame))
+        {
+          if(rle_accum >= 0x80)
+          {
+            fputc(((rle_accum>>8)|0x80)&0xFF, fp);
+            fputc((rle_accum)&0xFF, fp);
+          }
+          else
+          {
+            fputc(rle_accum, fp);
+          }
 
-    fputc(rle_accum, fp);
+          fputc(frame_new[i], fp);
+          rle_accum = 0;
+        }
+        else
+        {
+          rle_accum += 1;
+        }
+      }
+      fputc(0, fp);
+    }
   }
 
   // Copy the new frame over the old one
@@ -221,19 +237,37 @@ int demo_play_start_frame(struct world *mzx_world)
   {
     uint8_t *frame_new = (uint8_t *)frame;
     FILE *fp = demo->fp;
-    uint8_t rle_accum = fgetc(fp);
+    uint16_t rle_accum = fgetc(fp);
     size_t i;
 
-    for(i = 0; i < sizeof(*frame); i++)
+    // Check if this is a blank frame
+    if(rle_accum != 0xFF)
     {
-      if(rle_accum == 0)
+      // Not a blank frame, so decode it
+      if(rle_accum >= 0x80)
       {
-        frame_new[i] = fgetc(fp);
-        rle_accum = fgetc(fp);
+        rle_accum &= 0x7F;
+        rle_accum <<= 8;
+        rle_accum |= fgetc(fp);
       }
-      else
+
+      for(i = 0; i < sizeof(*frame); i++)
       {
-        rle_accum -= 1;
+        if(rle_accum == 0)
+        {
+          frame_new[i] = fgetc(fp);
+          rle_accum = fgetc(fp);
+          if(rle_accum >= 0x80)
+          {
+            rle_accum &= 0x7F;
+            rle_accum <<= 8;
+            rle_accum |= fgetc(fp);
+          }
+        }
+        else
+        {
+          rle_accum -= 1;
+        }
       }
     }
   }
