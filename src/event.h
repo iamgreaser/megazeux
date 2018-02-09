@@ -169,7 +169,7 @@ bool __peek_exit_input(void);
 #endif
 
 const struct buffered_status *load_status(void);
-struct buffered_status *load_status_nonconst(void);
+void set_forced_input(void (*callback)(void *), void *thunk, const struct buffered_status *status);
 
 void wait_event(int timeout);
 void force_last_key(enum keycode_type type, int val);

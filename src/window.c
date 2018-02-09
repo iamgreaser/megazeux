@@ -952,7 +952,7 @@ int run_dialog(struct world *mzx_world, struct dialog *di)
     update_screen();
 
     current_element = di->elements[current_element_num];
-    UPDATE_EVENT_STATUS_DELAY_TICK();
+    update_event_status_delay();
     current_key = get_key(keycode_internal_wrt_numlock);
 
     new_key = 0;

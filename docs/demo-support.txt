@@ -1,0 +1,21 @@
+Demo recording/playback support for MegaZeux
+Technical notes
+by GreaseMonkey, 2018
+vim: set syntax=markdown sts=2 sw=2 et :
+
+## Background
+
+At the time of writing I have been adding support for currently coop-only multiplayer to MegaZeux. 
+
+In order for this to be possible, I need some way of sending inputs consistently across a network. Much like the multiplayer testing that's been done so far, I've settled on a non-networked, local variant for now.
+
+## TODO
+
+* [x] Revert a lot of the `update_event_status` -> `UPDATE_EVENT_STATUS_TICK` stuff and hook it into the event system in a much better way
+* [ ] Allow stopping a demo by hitting, e.g., escape
+* [x] File dialogue boxes
+* [ ] "record demo" / "play demo" buttons
+* [ ] Loading and saving needs to work well
+  * I tested this by accident. While a save does successfully restore, and while it's all theoretically doable as long as you never load a save made outside of the demo, when I tested it, the RNG seed desynced.
+  * UPDATE: It's working now, but I do want this to be a limited filesystem sort of thing.
+

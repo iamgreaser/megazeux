@@ -30,6 +30,13 @@ extern struct buffered_status *load_status_nonconst(void);
 // GENERAL
 //
 
+static void demo_forced_input_callback(void *mzx_world_thunk)
+{
+  struct world *mzx_world = (struct world *)mzx_world_thunk;
+  demo_end_frame(mzx_world);
+  demo_start_frame(mzx_world);
+}
+
 static void demo_clear_frame(struct world *mzx_world, struct demo_frame *frame)
 {
   memset(frame, 0, sizeof(*frame));
@@ -70,6 +77,9 @@ int demo_deinit(struct world *mzx_world)
     fclose(demo->fp);
     demo->fp = NULL;
   }
+
+  // Release input hooks
+  set_forced_input(NULL, NULL, NULL);
 
   // Reinit to clear everything else
   demo_init(mzx_world);
@@ -131,7 +141,7 @@ int demo_record_init(struct world *mzx_world)
 int demo_record_start_frame(struct world *mzx_world)
 {
   struct demo_runtime *demo = &mzx_world->demo;
-  struct buffered_status *current_input = load_status_nonconst();
+  const struct buffered_status *current_input = load_status();
   struct demo_frame *frame = &(demo->current_frame);
 
   // Copy the new status over the old status
@@ -196,6 +206,9 @@ int demo_record_start_frame(struct world *mzx_world)
   // Clear "is first frame" flag
   frame->flags &= ~DEMO_FRAME_IS_FIRST;
 
+  // Set hook on input bump
+  set_forced_input(demo_forced_input_callback, mzx_world, NULL);
+
   return 0;
 }
 
@@ -223,7 +236,6 @@ int demo_play_start_frame(struct world *mzx_world)
 {
   struct demo_runtime *demo = &mzx_world->demo;
   struct demo_frame *frame = &(demo->current_frame);
-  struct buffered_status *current_input = load_status_nonconst();
   unsigned long long got_seed;
 
   // Copy the new frame over the old one
@@ -286,11 +298,8 @@ int demo_play_start_frame(struct world *mzx_world)
     rng_set_seed(frame->random_seed);
   }
 
-  // Copy the new status over the old status
-  memcpy(
-    current_input,
-    &(frame->buffer),
-    sizeof(frame->buffer));
+  // Force the new input
+  set_forced_input(demo_forced_input_callback, mzx_world, &(frame->buffer));
 
   return 0;
 }

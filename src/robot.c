@@ -2728,7 +2728,7 @@ void robot_box_display(struct world *mzx_world, char *program,
     robot_frame(mzx_world, program + pos, id);
     update_screen();
 
-    UPDATE_EVENT_STATUS_DELAY_TICK();
+    update_event_status_delay();
     key = get_key(keycode_internal_wrt_numlock);
 
     // Exit event--mimic Escape

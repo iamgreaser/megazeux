@@ -180,7 +180,7 @@ void scroll_edit(struct world *mzx_world, struct scroll *scroll, int type)
     }
     else
     {
-      UPDATE_EVENT_STATUS_DELAY_TICK();
+      update_event_status_delay();
       key = get_key(keycode_internal_wrt_numlock);
     }
 
@@ -575,7 +575,7 @@ void help_display(struct world *mzx_world, char *help, int offs, char *file,
 
     update_screen();
 
-    UPDATE_EVENT_STATUS_DELAY_TICK();
+    update_event_status_delay();
 
     if(get_mouse_press())
     {

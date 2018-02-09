@@ -27,25 +27,6 @@ __M_BEGIN_DECLS
 #include "demo_struct.h"
 #include "world_struct.h"
 
-#ifndef SKIP_SDL
-#include "event.h"
-#define UPDATE_EVENT_STATUS_TICK() \
-  update_event_status(); \
-  demo_end_frame(mzx_world); \
-  demo_start_frame(mzx_world)
-
-#if 1
-#define UPDATE_EVENT_STATUS_DELAY_TICK() \
-  update_event_status_delay(); \
-  demo_end_frame(mzx_world); \
-  demo_start_frame(mzx_world)
-#else
-#define UPDATE_EVENT_STATUS_DELAY_TICK() \
-  update_event_status_delay()
-#endif
-
-#endif /* !SKIP_SDL */
-
 int demo_init(struct world *mzx_world);
 int demo_deinit(struct world *mzx_world);
 int demo_start_frame(struct world *mzx_world);
@@ -56,6 +37,8 @@ int demo_record_end_frame(struct world *mzx_world);
 int demo_play_init(struct world *mzx_world);
 int demo_play_start_frame(struct world *mzx_world);
 int demo_play_end_frame(struct world *mzx_world);
+
+__M_END_DECLS
 
 #endif
 

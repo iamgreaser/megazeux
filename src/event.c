@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "demo.h"
 #include "event.h"
 #include "graphics.h"
 #include "util.h"
@@ -34,8 +35,11 @@
 static Uint32 last_update_time;
 
 struct input_status input;
+static const struct buffered_status *forced_input = NULL;
+static void *forced_input_thunk = NULL;
+static void (*forced_input_callback)(void *thunk) = NULL;
 
-static Uint8 num_buffered_events = 2;
+static Uint8 num_buffered_events = 1;
 
 struct buffered_status *store_status(void)
 {
@@ -44,12 +48,16 @@ struct buffered_status *store_status(void)
 
 const struct buffered_status *load_status(void)
 {
-  return (const struct buffered_status *)&input.buffer[input.load_offset];
+  return (forced_input != NULL
+    ? forced_input
+    : (const struct buffered_status *)(&input.buffer[input.load_offset]));
 }
 
-struct buffered_status *load_status_nonconst(void)
+void set_forced_input(void (*callback)(void *), void *thunk, const struct buffered_status *status)
 {
-  return &input.buffer[input.load_offset];
+  forced_input_callback = callback;
+  forced_input_thunk = thunk;
+  forced_input = status;
 }
 
 static void bump_status(void)
@@ -58,6 +66,12 @@ static void bump_status(void)
 
   input.store_offset = (input.store_offset + 1) % num_buffered_events;
   input.load_offset = (input.store_offset + 1) % num_buffered_events;
+
+  // Update forced input
+  if(forced_input_callback != NULL)
+  {
+    forced_input_callback(forced_input_thunk);
+  }
 
   // No event buffering; nothing to do
   if(input.store_offset == input.load_offset)
