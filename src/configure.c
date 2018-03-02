@@ -683,12 +683,9 @@ static const struct config_info default_options =
 #else /* !CONFIG_DEBYTECODE */
   "Stable",                     // update_branch_pin
 #endif /* !CONFIG_DEBYTECODE */
-<<<<<<< HEAD
 #endif /* !CONFIG_MULTIPLAYER */
-=======
   UPDATE_AUTO_CHECK_SILENT,     // update_auto_check
   0,                            // update_available
->>>>>>> upstream/master
 #endif /* CONFIG_UPDATER */
 };
 
