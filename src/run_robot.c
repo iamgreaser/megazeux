@@ -743,7 +743,7 @@ static void copy_block(struct world *mzx_world, int id, int x, int y,
         src_type = 3;
 
       // Save MZM to string (2.90+)
-      if(mzx_world->version >= 0x025A && is_string(name_buffer))
+      if(mzx_world->version >= V290 && is_string(name_buffer))
       {
         save_mzm_string(mzx_world, name_buffer, src_x, src_y,
          width, height, src_type, 1, id);
@@ -1419,8 +1419,8 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
             // no longer necessary.
             if(mzx_world->special_counter_return == FOPEN_SAVE_GAME)
             {
-              if (mzx_world->version < 0x025A)
-              { // Prior to 2.90
+              if(mzx_world->version < V290)
+              {
                 if(!program[cur_robot->cur_prog_line])
                   cur_robot->cur_prog_line = 0;
 
@@ -1550,7 +1550,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           }
 
           // String equality extensions (2.91+)
-          if(mzx_world->version >= 0x025B)
+          if(mzx_world->version >= V291)
           {
             if(comparison == EXACTLY_EQUAL || comparison == WILD_EXACTLY_EQUAL)
               exact_case = 1;
@@ -1569,7 +1569,8 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           src_value = parse_param(mzx_world, src_string, id);
         }
 
-        if (mzx_world->version < 0x025a) {
+        if(mzx_world->version < V290)
+        {
           // In port releases prior to 2.90b there was a horrible
           // bug stopping comparisons between numbers with a
           // difference greater than 2^31-1.
@@ -1931,8 +1932,9 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           }
         }
 
-        if(cmd == 19)
-          success ^= 1;     // Reverse truth if NOT is present
+        // Reverse truth if NOT is present
+        if(cmd == ROBOTIC_CMD_IF_NOT_CONDITION)
+          success ^= 1;
 
         if(success)
         {
@@ -1963,8 +1965,8 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
             char *p4 = next_param_pos(p3);
             gotoed = send_self_label_tr(mzx_world,  p4 + 1, id);
 
-            // 2.80 through 2.84 allowed this to iterate the entire board.
-            if(mzx_world->version < 0x250 || mzx_world->version > 0x254)
+            // The port up through 2.84 allowed this to iterate the entire board.
+            if(mzx_world->version < VERSION_PORT || mzx_world->version > V284)
               break;
           }
         }
@@ -2621,9 +2623,11 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
 
           // Move player
           move_player(mzx_world, -1, dir_to_int(direction));
-          if((mzx_world->player[0].x == old_x) &&
+
+          if((cmd == ROBOTIC_CMD_MOVE_PLAYER_DIR_OR) &&
+           (mzx_world->player[0].x == old_x) &&
            (mzx_world->player[0].y == old_y) &&
-           (mzx_world->current_board_id == old_board) && (cmd == 62) &&
+           (mzx_world->current_board_id == old_board) &&
            (mzx_world->target_where == old_target))
           {
             char *p2 = next_param_pos(cmd_ptr + 1);
@@ -2797,7 +2801,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           }
         }
         // MZX 2.83 erroneously ended the cycle here, some games depend on it...
-        if(mzx_world->version == 0x0253)
+        if(mzx_world->version == V283)
         {
           // Continue to the next line.
           cur_robot->cur_prog_line += program[cur_robot->cur_prog_line] + 2;
@@ -2844,7 +2848,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           }
         }
         // MZX 2.83 erroneously ended the cycle here, some games depend on it...
-        if(mzx_world->version == 0x0253)
+        if(mzx_world->version == V283)
         {
           // Continue to the next line.
           cur_robot->cur_prog_line += program[cur_robot->cur_prog_line] + 2;
@@ -2866,7 +2870,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           }
         }
         // MZX 2.83 erroneously ended the cycle here, some games depend on it...
-        if(mzx_world->version == 0x0253)
+        if(mzx_world->version == V283)
         {
           // Continue to the next line.
           cur_robot->cur_prog_line += program[cur_robot->cur_prog_line] + 2;
@@ -2888,7 +2892,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           }
         }
         // MZX 2.83 erroneously ended the cycle here, some games depend on it...
-        if(mzx_world->version == 0x0253)
+        if(mzx_world->version == V283)
         {
           // Continue to the next line.
           cur_robot->cur_prog_line += program[cur_robot->cur_prog_line] + 2;
@@ -2959,15 +2963,16 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
 
           tr_msg(mzx_world, cmd_ptr + 3, id, mzm_name_buffer);
 
-          if(mzx_world->version >= 0x025A && is_string(mzm_name_buffer))
+          if(mzx_world->version >= V290 && is_string(mzm_name_buffer))
           {
             struct string src;
             
             if(get_string(mzx_world, mzm_name_buffer, &src, id))
-              load_mzm_memory(mzx_world, mzm_name_buffer, put_x, put_y, put_param, 1, src.value, src.length);
+              load_mzm_memory(mzx_world, mzm_name_buffer, put_x, put_y,
+               put_param, 1, src.value, src.length);
           }
           else
-            {
+          {
             if(!fsafetranslate(mzm_name_buffer, translated_name))
             {
               load_mzm(mzx_world, translated_name, put_x, put_y,
@@ -3450,7 +3455,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
              CAN_PUSH | CAN_TRANSPORT | CAN_FIREWALK | CAN_WATERWALK |
              CAN_LAVAWALK * cur_robot->can_lavawalk |
              (cur_robot->can_goopwalk ? CAN_GOOPWALK : 0))) &&
-             (cmd == 232))
+             (cmd == ROBOTIC_CMD_PERSISTENT_GO))
             {
               cur_robot->pos_within_line--; // persistent...
             }
@@ -3894,8 +3899,8 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           next_param = next_param_pos(next_param);
         }
         // Prior to 2.90 char params are clipped
-        if (mzx_world->version < 0x025A) char_num &= 0xFF;
-        if (char_num <= 0xFF || layer_renderer_check(true))
+        if(mzx_world->version < V290) char_num &= 0xFF;
+        if(char_num <= 0xFF || layer_renderer_check(true))
           ec_change_char(char_num, char_buffer);
         break;
       }
@@ -4747,11 +4752,11 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         if((type[2] == type[3]) || ((type[2] > 2) && (type[3] == 0)))
           dest_type = type[2];
 
-        //something is wrong with the params, abort
+        // something is wrong with the params, abort
         if((src_type < 0) || (dest_type < 0))
           break;
 
-        if (cmd == ROBOTIC_CMD_COPY_OVERLAY_BLOCK)
+        if(cmd == ROBOTIC_CMD_COPY_OVERLAY_BLOCK)
         {
           if(src_type < 2)
             src_type ^= 1;
@@ -4856,7 +4861,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           int i;
 
           // Prior to 2.90 char params are clipped
-          if (mzx_world->version < 0x025A) char_num &= 0xFF;
+          if(mzx_world->version < V290) char_num &= 0xFF;
 
           ec_read_char(char_num, char_buffer);
 
@@ -4938,7 +4943,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         if(is_cardinal_dir(flip_dir))
         {
           // Prior to 2.90 char params are clipped
-          if (mzx_world->version < 0x025A) char_num &= 0xFF;
+          if(mzx_world->version < V290) char_num &= 0xFF;
           
           ec_read_char(char_num, char_buffer);
 
@@ -4990,7 +4995,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         int dest_char = parse_param(mzx_world, p2, id);
 
         // Prior to 2.90 char params are clipped
-        if (mzx_world->version < 0x025A)
+        if(mzx_world->version < V290)
         {
           src_char &= 0xFF;
           dest_char &= 0xFF;
@@ -5096,7 +5101,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
           int maxlen;
           // The offset string length was increased in 2.90 to
           // allow for accessing extended char sets.
-          if (mzx_world->version < 0x025A)
+          if(mzx_world->version < V290)
             maxlen = 3;
           else
             maxlen = 4;
@@ -5112,7 +5117,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         }
 
         // Load from string (2.90+)
-        if(mzx_world->version >= 0x025A && is_string(src_name))
+        if(mzx_world->version >= V290 && is_string(src_name))
         {
           struct string src;
 
@@ -5194,7 +5199,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         tr_msg(mzx_world, cmd_ptr + 2, id, name_buffer);
 
         // Load palette from string (2.90+)
-        if(mzx_world->version >= 0x025A && is_string(name_buffer))
+        if(mzx_world->version >= V290 && is_string(name_buffer))
         {
           struct string src;
 
@@ -5647,7 +5652,7 @@ void run_robot(struct world *mzx_world, int id, int x, int y)
         // compatibility has been broken forever, so only do this for
         // old worlds.
 
-        if(mzx_world->version <= 0x0249)
+        if(mzx_world->version < VERSION_PORT)
         {
           if(last_label == cur_robot->cur_prog_line)
             goto breaker;

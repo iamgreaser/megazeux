@@ -211,8 +211,6 @@ struct world
 
   // Current speed of MZX world
   int mzx_speed;
-  // Default speed (as loaded by config file)
-  int default_speed;
   // If we can change the speed from the F2 menu.
   int lock_speed;
 
