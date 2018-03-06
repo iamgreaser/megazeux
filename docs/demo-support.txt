@@ -15,7 +15,10 @@ In order for this to be possible, I need some way of sending inputs consistently
 * [ ] Allow stopping a demo by hitting, e.g., escape
 * [x] File dialogue boxes
 * [ ] "record demo" / "play demo" buttons
-* [ ] Loading and saving needs to work well
+* [x] Actually use MZX's FS layer for writing a demo file
+* [x] Loading and saving needs to work well
   * I tested this by accident. While a save does successfully restore, and while it's all theoretically doable as long as you never load a save made outside of the demo, when I tested it, the RNG seed desynced.
   * UPDATE: It's working now, but I do want this to be a limited filesystem sort of thing.
+    * UPDATE 2: This wasn't fixed. It's fixed now. If you were to create a new save file during a demo which wasn't cleaned up before playing the demo, you'd get a desync.
+    * Anyhow, file load / save is now replaced with a simple yes/no dialogue.
 

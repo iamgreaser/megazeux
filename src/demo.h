@@ -27,6 +27,10 @@ __M_BEGIN_DECLS
 #include "demo_struct.h"
 #include "world_struct.h"
 
+int demo_is_playing(struct world *mzx_world);
+int demo_is_recording(struct world *mzx_world);
+int demo_is_active(struct world *mzx_world);
+
 int demo_init(struct world *mzx_world);
 int demo_deinit(struct world *mzx_world);
 int demo_start_frame(struct world *mzx_world);

@@ -22,9 +22,33 @@
 #include "const.h"
 #include "demo.h"
 #include "event.h"
+#include "fsafeopen.h"
 #include "util.h"
 
 extern struct buffered_status *load_status_nonconst(void);
+
+//
+// ABSTRACTION LAYER
+//
+
+int demo_is_playing(struct world *mzx_world)
+{
+  struct demo_runtime *demo = &mzx_world->demo;
+
+  return demo->playing;
+}
+
+int demo_is_recording(struct world *mzx_world)
+{
+  struct demo_runtime *demo = &mzx_world->demo;
+
+  return demo->recording;
+}
+
+int demo_is_active(struct world *mzx_world)
+{
+  return (demo_is_playing(mzx_world) || demo_is_recording(mzx_world));
+}
 
 //
 // GENERAL
@@ -133,7 +157,8 @@ int demo_record_init(struct world *mzx_world)
 
   // Enable recording and open file
   demo->recording = true;
-  demo->fp = fopen_unsafe("DEMOTEST.DMO", "wb");
+  demo->fp = fsafeopen("DEMOTEST.DMO", "wb");
+  unlink("__demo1.sav");
 
   return 0;
 }
@@ -227,7 +252,8 @@ int demo_play_init(struct world *mzx_world)
 
   // Enable playback and open file
   demo->playing = true;
-  demo->fp = fopen_unsafe("DEMOTEST.DMO", "rb");
+  demo->fp = fsafeopen("DEMOTEST.DMO", "rb");
+  unlink("__demo1.sav");
 
   return 0;
 }

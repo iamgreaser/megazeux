@@ -2560,12 +2560,23 @@ __editor_maybe_static void play_game(struct world *mzx_world)
              SENSOR)))
             {
               char save_game[MAX_PATH];
-
-              strcpy(save_game, curr_sav);
+              int file_success;
 
               m_show();
-              if(!new_file(mzx_world, save_ext, ".sav", save_game,
-               "Save game", 1))
+              if(demo_is_active(mzx_world))
+              {
+                strcpy(curr_sav, "__demo1.sav");
+                strcpy(save_game, curr_sav);
+                file_success = !confirm(mzx_world, "SAVING demo save- Are you sure?");
+              }
+              else
+              {
+                strcpy(save_game, curr_sav);
+                file_success = !new_file(mzx_world, save_ext, ".sav", save_game,
+                  "Save game", 1);
+              }
+
+              if(file_success)
               {
                 strcpy(curr_sav, save_game);
                 // Save entire game
@@ -2589,10 +2600,22 @@ __editor_maybe_static void play_game(struct world *mzx_world)
           {
             // Restore
             char save_file_name[MAX_PATH] = { 0 };
+            int file_success;
             m_show();
 
-            if(!choose_file_ch(mzx_world, save_ext, save_file_name,
-             "Choose game to restore", 1))
+            if(demo_is_active(mzx_world))
+            {
+              strcpy(curr_sav, "__demo1.sav");
+              strcpy(save_file_name, curr_sav);
+              file_success = !confirm(mzx_world, "LOADING demo save- Are you sure?");
+            }
+            else
+            {
+              file_success = !choose_file_ch(mzx_world, save_ext, save_file_name,
+               "Choose game to restore", 1);
+            }
+
+            if(file_success)
             {
               // Load game
               fadein = 0;
