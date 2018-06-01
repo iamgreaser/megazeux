@@ -152,13 +152,13 @@ int demo_end_frame(struct world *mzx_world)
 // RECORDING
 //
 
-int demo_record_init(struct world *mzx_world)
+int demo_record_init(struct world *mzx_world, const char *file_name)
 {
   struct demo_runtime *demo = &mzx_world->demo;
 
   // Enable recording and open file
   demo->recording = true;
-  demo->fp = fsafeopen("DEMOTEST.DMO", "wb");
+  demo->fp = fopen_unsafe(file_name, "wb");
 
   // Magic header
   fputc('D', demo->fp);
@@ -256,14 +256,19 @@ int demo_record_end_frame(struct world *mzx_world)
 // PLAYBACK
 //
 
-int demo_play_init(struct world *mzx_world)
+int demo_play_init(struct world *mzx_world, const char *file_name)
 {
   struct demo_runtime *demo = &mzx_world->demo;
   char magic[4];
 
   // Enable playback and open file
-  demo->playing = true;
-  demo->fp = fsafeopen("DEMOTEST.DMO", "rb");
+  demo->fp = fopen_unsafe(file_name, "rb");
+
+  if(demo->fp == NULL)
+  {
+    error_message(E_FILE_DOES_NOT_EXIST, 0, NULL);
+    return 1;
+  }
 
   // Read magic header
   magic[0] = fgetc(demo->fp);
@@ -272,11 +277,14 @@ int demo_play_init(struct world *mzx_world)
   magic[3] = fgetc(demo->fp);
   if(magic[0] != 'D' || magic[1] != 'M' || magic[2] != 'Z' || magic[3] != 'x')
   {
+    fclose(demo->fp);
     error_message(E_DEMO_FILE_INVALID, 0, NULL);
     return 1;
   }
 
   unlink("__demo1.sav");
+
+  demo->playing = true;
 
   return 0;
 }

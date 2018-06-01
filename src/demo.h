@@ -35,10 +35,10 @@ int demo_init(struct world *mzx_world);
 int demo_deinit(struct world *mzx_world);
 int demo_start_frame(struct world *mzx_world);
 int demo_end_frame(struct world *mzx_world);
-int demo_record_init(struct world *mzx_world);
+int demo_record_init(struct world *mzx_world, const char *file_name);
 int demo_record_start_frame(struct world *mzx_world);
 int demo_record_end_frame(struct world *mzx_world);
-int demo_play_init(struct world *mzx_world);
+int demo_play_init(struct world *mzx_world, const char *file_name);
 int demo_play_start_frame(struct world *mzx_world);
 int demo_play_end_frame(struct world *mzx_world);
 

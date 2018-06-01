@@ -2415,7 +2415,6 @@ __editor_maybe_static void play_game(struct world *mzx_world)
   struct board *src_board;
   int fadein = 1;
   struct config_info *conf = &mzx_world->conf;
-  static bool demo_test_playing = false;
 
   // Main game loop
   // Mouse remains hidden unless menu/etc. is invoked
@@ -2424,24 +2423,15 @@ __editor_maybe_static void play_game(struct world *mzx_world)
 
 
   // DEMO TEST - FIXME: DO THIS SANELY
-  if(demo_test_playing)
+  if(!demo_is_playing(mzx_world))
   {
     demo_deinit(mzx_world);
     demo_init(mzx_world);
-    demo_play_init(mzx_world);
+    demo_record_init(mzx_world, "DEMOTEST.DMO");
     demo_start_frame(mzx_world);
-    demo_test_playing = false;
-    debug("Starting demo PLAYBACK\n");
-  }
-  else
-  {
-    demo_deinit(mzx_world);
-    demo_init(mzx_world);
-    demo_record_init(mzx_world);
-    demo_start_frame(mzx_world);
-    demo_test_playing = true;
     debug("Starting demo RECORDING\n");
   }
+
   do
   {
     focus_on_player(mzx_world);
@@ -3050,6 +3040,7 @@ static void load_game_from_main_menu(struct world *mzx_world, const char *save_f
 {
   struct stat file_info;
   int fade;
+  int end_idx;
 
   // Swap out current board...
   clear_sfx_queue();
@@ -3061,6 +3052,34 @@ static void load_game_from_main_menu(struct world *mzx_world, const char *save_f
   chdir(config_dir);
   set_config_from_file(&(mzx_world->conf), "game.cnf");
   chdir(current_dir);
+
+  // Check file name to see if this is a demo
+  end_idx = strlen(save_file_name);
+  if(end_idx >= 4)
+  {
+    if(true
+      && save_file_name[end_idx-4] == '.'
+      && (save_file_name[end_idx-3]|0x20) == 'd'
+      && (save_file_name[end_idx-2]|0x20) == 'm'
+      && (save_file_name[end_idx-1]|0x20) == 'o')
+    {
+      debug("Starting demo \"%s\"\n", save_file_name);
+      // Probably a demo. Load demo and play world.
+      demo_deinit(mzx_world);
+      demo_init(mzx_world);
+      if(demo_play_init(mzx_world, save_file_name))
+      {
+        // Demo playback failed.
+        demo_deinit(mzx_world);
+        return;
+      }
+      demo_start_frame(mzx_world);
+      debug("Starting demo PLAYBACK\n");
+
+      start_game_from_main_menu(mzx_world, src_board_p, fadein_p);
+      return;
+    }
+  }
 
   if(!reload_savegame(mzx_world, save_file_name, fadein_p))
   {
