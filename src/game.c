@@ -3046,6 +3046,81 @@ static void start_game_from_main_menu(struct world *mzx_world, struct board **sr
   *fadein_p = 1;
 }
 
+static void load_game_from_main_menu(struct world *mzx_world, const char *save_file_name, struct board **src_board_p, int *fadein_p)
+{
+  struct stat file_info;
+  int fade;
+
+  // Swap out current board...
+  clear_sfx_queue();
+  // Load game
+  *fadein_p = 0;
+
+  getcwd(current_dir, MAX_PATH);
+
+  chdir(config_dir);
+  set_config_from_file(&(mzx_world->conf), "game.cnf");
+  chdir(current_dir);
+
+  if(!reload_savegame(mzx_world, save_file_name, fadein_p))
+  {
+    return;
+  }
+
+  *src_board_p = mzx_world->current_board;
+  load_savegame_module(mzx_world);
+  set_intro_mesg_timer(0);
+
+  // Copy filename
+  strcpy(curr_sav, save_file_name);
+  *fadein_p ^= 1;
+
+  // do not send JUSTENTERED when loading a SAV game from the
+  // title screen or when no game is loaded; here we ONLY send
+  // JUSTLOADED.
+  send_robot_def(mzx_world, 0, LABEL_JUSTLOADED, -1);
+
+  set_counter(mzx_world, "TIME", (*src_board_p)->time_limit, 0);
+
+  find_player(mzx_world);
+  mzx_world->player_restart_x = mzx_world->player[0].x;
+  mzx_world->player_restart_y = mzx_world->player[0].y;
+  vquick_fadeout();
+
+  update_event_status();
+  play_game(mzx_world);
+
+  if(mzx_world->full_exit)
+    return;
+
+  // Done playing- load world again
+  // Already faded out from play_game()
+  end_module();
+  // Clear screen
+  clear_screen(32, 7);
+  // Palette
+  default_palette();
+  insta_fadein();
+  // Reload original file
+  if(!stat(curr_file, &file_info))
+  {
+    if(reload_world(mzx_world, curr_file, &fade))
+    {
+      (*src_board_p) = mzx_world->current_board;
+      load_board_module(mzx_world, *src_board_p);
+      set_counter(mzx_world, "TIME",
+       (*src_board_p)->time_limit, 0);
+    }
+  }
+  else
+  {
+    clear_world(mzx_world);
+    clear_global_data(mzx_world);
+  }
+  vquick_fadeout();
+  *fadein_p = 1;
+}
+
 void title_screen(struct world *mzx_world)
 {
   int exit = 0;
@@ -3249,77 +3324,12 @@ void title_screen(struct world *mzx_world)
           if(!choose_file_ch(mzx_world, save_or_demo_ext, save_file_name,
            "Choose game to restore / demo to play", 1))
           {
-            // Swap out current board...
-            clear_sfx_queue();
-            // Load game
-            fadein = 0;
-
-            getcwd(current_dir, MAX_PATH);
-
-            chdir(config_dir);
-            set_config_from_file(&(mzx_world->conf), "game.cnf");
-            chdir(current_dir);
-
-            if(reload_savegame(mzx_world, save_file_name, &fadein))
-            {
-              src_board = mzx_world->current_board;
-              load_savegame_module(mzx_world);
-              set_intro_mesg_timer(0);
-
-              // Copy filename
-              strcpy(curr_sav, save_file_name);
-              fadein ^= 1;
-
-              // do not send JUSTENTERED when loading a SAV game from the
-              // title screen or when no game is loaded; here we ONLY send
-              // JUSTLOADED.
-              send_robot_def(mzx_world, 0, LABEL_JUSTLOADED, -1);
-
-              set_counter(mzx_world, "TIME", src_board->time_limit, 0);
-
-              find_player(mzx_world);
-              mzx_world->player_restart_x = mzx_world->player[0].x;
-              mzx_world->player_restart_y = mzx_world->player[0].y;
-              vquick_fadeout();
-
-              update_event_status();
-              play_game(mzx_world);
-
-              if(mzx_world->full_exit)
-                break;
-
-              // Done playing- load world again
-              // Already faded out from play_game()
-              end_module();
-              // Clear screen
-              clear_screen(32, 7);
-              // Palette
-              default_palette();
-              insta_fadein();
-              // Reload original file
-              if(!stat(curr_file, &file_info))
-              {
-                if(reload_world(mzx_world, curr_file, &fade))
-                {
-                  src_board = mzx_world->current_board;
-                  load_board_module(mzx_world, src_board);
-                  set_counter(mzx_world, "TIME",
-                   src_board->time_limit, 0);
-                }
-              }
-              else
-              {
-                clear_world(mzx_world);
-                clear_global_data(mzx_world);
-              }
-              vquick_fadeout();
-              fadein = 1;
-            }
-            break;
+            load_game_from_main_menu(mzx_world, save_file_name, &src_board, &fadein);
+          } else {
+            update_screen();
+            update_event_status();
           }
 
-          update_screen();
-          update_event_status();
           break;
         }
 
