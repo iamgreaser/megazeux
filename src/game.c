@@ -122,6 +122,7 @@ __editor_maybe_static void (*draw_debug_box)(struct world *mzx_world,
 __editor_maybe_static void (*debug_robot_config)(struct world *mzx_world);
 
 static const char *const save_ext[] = { ".SAV", NULL };
+static const char *const save_or_demo_ext[] = { ".SAV", ".DMO", NULL };
 static int update_music;
 
 static bool editing = true;
@@ -2941,6 +2942,110 @@ __editor_maybe_static void play_game(struct world *mzx_world)
   clear_sfx_queue();
 }
 
+static void start_game_from_main_menu(struct world *mzx_world, struct board **src_board_p, int *fadein_p)
+{
+  char old_mod_playing[MAX_PATH];
+  int fade;
+
+  if(!mzx_world->active)
+  {
+    return;
+  }
+
+  strcpy(old_mod_playing, mzx_world->real_mod_playing);
+
+  // Play
+  // Only from swap?
+
+  if(mzx_world->only_from_swap)
+  {
+    m_show();
+    error("You can only play this game via a swap"
+     " from another game", 0, 24, 0x3101);
+    return;
+  }
+
+  // Load world curr_file
+  // Don't end mod- We want a smooth transition for that.
+  // Clear screen
+
+  clear_screen(32, 7);
+  // Palette
+  default_palette();
+
+  getcwd(current_dir, MAX_PATH);
+
+  chdir(config_dir);
+  set_config_from_file(&(mzx_world->conf), "game.cnf");
+  chdir(current_dir);
+
+  if(!reload_world(mzx_world, curr_file, &fade))
+  {
+    end_module();
+    clear_screen(32, 7);
+    return;
+  }
+
+  if(mzx_world->current_board_id != mzx_world->first_board)
+  {
+    change_board(mzx_world, mzx_world->first_board);
+  }
+
+  *src_board_p = mzx_world->current_board;
+
+  // send both JUSTENTERED and JUSTLOADED respectively; the
+  // JUSTLOADED label will take priority if a robot defines it
+  send_robot_def(mzx_world, 0, LABEL_JUSTENTERED, -1);
+  send_robot_def(mzx_world, 0, LABEL_JUSTLOADED, -1);
+
+  // Load the mod, but with special handling of *
+  strcpy(mzx_world->real_mod_playing, old_mod_playing);
+  if(load_board_module_change_test(mzx_world, (*src_board_p)->mod_playing))
+    load_board_module(mzx_world, (*src_board_p));
+
+  set_intro_mesg_timer(0);
+
+  set_counter(mzx_world, "TIME", (*src_board_p)->time_limit, 0);
+
+  clear_sfx_queue();
+  find_player(mzx_world);
+  mzx_world->player_restart_x = mzx_world->player[0].x;
+  mzx_world->player_restart_y = mzx_world->player[0].y;
+  vquick_fadeout();
+
+  // Load board palette and charset
+  change_board_load_assets(mzx_world);
+
+  play_game(mzx_world);
+
+  if(mzx_world->full_exit)
+    return;
+
+  // Done playing- load world again
+  // Already faded out from play_game()
+  end_module();
+  // Clear screen
+  clear_screen(32, 7);
+  // Palette
+  default_palette();
+  insta_fadein();
+  // Reload original file
+  if(reload_world(mzx_world, curr_file, &fade))
+  {
+    *src_board_p = mzx_world->current_board;
+    load_board_module(mzx_world, *src_board_p);
+    set_counter(mzx_world, "TIME", (*src_board_p)->time_limit, 0);
+  }
+  // Whoops, something happened! Make a blank world instead
+  else
+  {
+    clear_world(mzx_world);
+    clear_global_data(mzx_world);
+  }
+  vquick_fadeout();
+  *fadein_p = 1;
+}
+
 void title_screen(struct world *mzx_world)
 {
   int exit = 0;
@@ -3141,8 +3246,8 @@ void title_screen(struct world *mzx_world)
           // Restore
           m_show();
 
-          if(!choose_file_ch(mzx_world, save_ext, save_file_name,
-           "Choose game to restore", 1))
+          if(!choose_file_ch(mzx_world, save_or_demo_ext, save_file_name,
+           "Choose game to restore / demo to play", 1))
           {
             // Swap out current board...
             clear_sfx_queue();
@@ -3221,104 +3326,7 @@ void title_screen(struct world *mzx_world)
         case IKEY_F5:
         case IKEY_p:
         {
-          if(mzx_world->active)
-          {
-            char old_mod_playing[MAX_PATH];
-            strcpy(old_mod_playing, mzx_world->real_mod_playing);
-
-            // Play
-            // Only from swap?
-
-            if(mzx_world->only_from_swap)
-            {
-              m_show();
-              error("You can only play this game via a swap"
-               " from another game", 0, 24, 0x3101);
-              break;
-            }
-
-            // Load world curr_file
-            // Don't end mod- We want a smooth transition for that.
-            // Clear screen
-
-            clear_screen(32, 7);
-            // Palette
-            default_palette();
-
-            getcwd(current_dir, MAX_PATH);
-
-            chdir(config_dir);
-            set_config_from_file(&(mzx_world->conf), "game.cnf");
-            chdir(current_dir);
-
-            if(reload_world(mzx_world, curr_file, &fade))
-            {
-              if(mzx_world->current_board_id != mzx_world->first_board)
-              {
-                change_board(mzx_world, mzx_world->first_board);
-              }
-
-              src_board = mzx_world->current_board;
-
-              // send both JUSTENTERED and JUSTLOADED respectively; the
-              // JUSTLOADED label will take priority if a robot defines it
-              send_robot_def(mzx_world, 0, LABEL_JUSTENTERED, -1);
-              send_robot_def(mzx_world, 0, LABEL_JUSTLOADED, -1);
-
-              // Load the mod, but with special handling of *
-              strcpy(mzx_world->real_mod_playing, old_mod_playing);
-              if(load_board_module_change_test(mzx_world, src_board->mod_playing))
-                load_board_module(mzx_world, src_board);
-
-              set_intro_mesg_timer(0);
-
-              set_counter(mzx_world, "TIME", src_board->time_limit, 0);
-
-              clear_sfx_queue();
-              find_player(mzx_world);
-              mzx_world->player_restart_x = mzx_world->player[0].x;
-              mzx_world->player_restart_y = mzx_world->player[0].y;
-              vquick_fadeout();
-
-              // Load board palette and charset
-              change_board_load_assets(mzx_world);
-
-              play_game(mzx_world);
-
-              if(mzx_world->full_exit)
-                break;
-
-              // Done playing- load world again
-              // Already faded out from play_game()
-              end_module();
-              // Clear screen
-              clear_screen(32, 7);
-              // Palette
-              default_palette();
-              insta_fadein();
-              // Reload original file
-              if(reload_world(mzx_world, curr_file, &fade))
-              {
-                src_board = mzx_world->current_board;
-                load_board_module(mzx_world, src_board);
-                set_counter(mzx_world, "TIME", src_board->time_limit, 0);
-              }
-              // Whoops, something happened! Make a blank world instead
-              else
-              {
-                clear_world(mzx_world);
-                clear_global_data(mzx_world);
-              }
-              vquick_fadeout();
-              fadein = 1;
-            }
-            else
-            {
-              end_module();
-              clear_screen(32, 7);
-            }
-          }
-
+          start_game_from_main_menu(mzx_world, &src_board, &fadein);
           break;
         }
 
