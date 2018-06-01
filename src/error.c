@@ -253,6 +253,11 @@ int error_message(enum error_code id, int parameter, const char *string)
       code = 0x2101;
       break;
 
+    case E_DEMO_FILE_INVALID:
+      sprintf(error_mesg, "File is not a valid .DMO file or is corrupt");
+      code = 0x2101;
+      break;
+
     case E_WORLD_FILE_INVALID:
       sprintf(error_mesg, "File is not a valid world file or is corrupt");
       code = 0x0D02;

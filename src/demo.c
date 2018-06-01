@@ -21,6 +21,7 @@
 
 #include "const.h"
 #include "demo.h"
+#include "error.h"
 #include "event.h"
 #include "fsafeopen.h"
 #include "util.h"
@@ -158,6 +159,15 @@ int demo_record_init(struct world *mzx_world)
   // Enable recording and open file
   demo->recording = true;
   demo->fp = fsafeopen("DEMOTEST.DMO", "wb");
+
+  // Magic header
+  fputc('D', demo->fp);
+  fputc('M', demo->fp);
+  fputc('Z', demo->fp);
+  fputc('x', demo->fp); // version: 'x' = experimental
+
+  // TODO: more stuff
+
   unlink("__demo1.sav");
 
   return 0;
@@ -249,10 +259,23 @@ int demo_record_end_frame(struct world *mzx_world)
 int demo_play_init(struct world *mzx_world)
 {
   struct demo_runtime *demo = &mzx_world->demo;
+  char magic[4];
 
   // Enable playback and open file
   demo->playing = true;
   demo->fp = fsafeopen("DEMOTEST.DMO", "rb");
+
+  // Read magic header
+  magic[0] = fgetc(demo->fp);
+  magic[1] = fgetc(demo->fp);
+  magic[2] = fgetc(demo->fp);
+  magic[3] = fgetc(demo->fp);
+  if(magic[0] != 'D' || magic[1] != 'M' || magic[2] != 'Z' || magic[3] != 'x')
+  {
+    error_message(E_DEMO_FILE_INVALID, 0, NULL);
+    return 1;
+  }
+
   unlink("__demo1.sav");
 
   return 0;
