@@ -54,18 +54,40 @@ Everything after that is more like a stretch goal. This includes:
 
 ----------------------------------------------------------------------------
 
-[UNIMPLEMENTED] Input handling
+Input handling
 
 This one's going to be hard to get right.
 
+NOTE: Naming of things is tentative right now.
+
+- Every player has 16 buttons which can be mapped for different purposes.
+- Mappings will be provided via the configuration system.
+- Player 0 has these defaults on the keyboard (TODO: by default, do we map from the joystick directly, or do we default these to key.* and let the joystick-to-keyboard mapping take over?):
+  - player0.up = key.up,joy1.up,joy1.l_up,joy1.r_up
+  - player0.down = key.down,joy1.down,joy1.l_down,joy1.r_down
+  - player0.right = key.right,joy1.right,joy1.l_right,joy1.r_right
+  - player0.left = key.left,joy1.left,joy1.l_left,joy1.r_left
+  - player0.shoot = key.space,joy1.x
+  - player0.bomb = key.delete,joy1.b
+  - [TODO] player0.bombtype = key.insert,key.f5,joy1.lshoulder
+  - Yes, I'm aware that players start from 0 and joysticks start from 1. There's a good reason for the former mentioned earlier in the document, while the latter is a legacy wart that would be confusing to change now.
+- The remaining 9 buttons are free for MP-aware games to allocate.
+
+Some notes:
+
 ? Should each player be presented as a virtual joystick?
   - The joystick code could do with less pain, not more.
+  * There's potential for being able to provide analogue axes for a player.
 ? Should each player be presented as its own keyboard? mouse? both?
+  * The current approach does not use this.
 ? Do we separate (up|down|left|right|space|del|ins)pressed from their respective keys and then have some way to map these to the respective players?
   + This is probably going to have to happen regardless.
+  * This is the current approach.
 ? Do we have extra virtual keys for (up|down|left|right|space|del|ins)?
+  * The current approach does not use this - it has limited extensibility and is dirtier.
   ? Do we also have an extra one for insert, or do we all share that button, or do we leave that to player 0?
     + Some games distinguish between lobombs and hibombs, so there's value in having this selectable per-player
+    * TODO. The game is currently wired to have that as a global key.
 
 ----------------------------------------------------------------------------
 
