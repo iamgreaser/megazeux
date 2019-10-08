@@ -32,6 +32,45 @@ __M_BEGIN_DECLS
 #define NUM_PLAYERS 1
 #endif
 
+enum player_input_bits
+{
+  PINP_UP        =   0,
+  PINP_DOWN      =   1,
+  PINP_RIGHT     =   2,
+  PINP_LEFT      =   3,
+  PINP_SHOOT     =   4,
+  PINP_BOMB      =   5,
+  PINP_UNUSED006 =   6, // TODO: move Ins/F5 to here
+  PINP_UNUSED007 =   7,
+
+  PINP_UNUSED008 =   8,
+  PINP_UNUSED009 =   9,
+  PINP_UNUSED010 =  10,
+  PINP_UNUSED011 =  11,
+  PINP_UNUSED012 =  12,
+  PINP_UNUSED013 =  13,
+  PINP_UNUSED014 =  14,
+  PINP_UNUSED015 =  15,
+
+  NUM_PINP,
+};
+
+struct player_input
+{
+  boolean up;
+  boolean down;
+  boolean right;
+  boolean left;
+  boolean shoot;
+  boolean bomb;
+};
+
+union player_input_union
+{
+  struct player_input s;
+  boolean a[16];
+};
+
 struct player
 {
   int x;
@@ -52,6 +91,9 @@ struct player
   int key_down_delay;
   int key_right_delay;
   int key_left_delay;
+
+  // Player inputs
+  union player_input_union input;
 };
 
 __M_END_DECLS

@@ -336,37 +336,56 @@ static void update_player_wind(struct world *mzx_world)
  * May result in a context change.
  */
 
+static void update_one_player_input_state(struct world *mzx_world, int player_id)
+{
+  struct player *player = &mzx_world->players[player_id];
+  struct player_input *input = &player->input.s;
+
+  // TODO: make these bindable per-player in the config
+  input->shoot = get_key_status(keycode_internal_wrt_numlock, IKEY_SPACE);
+  input->up = get_key_status(keycode_internal_wrt_numlock, IKEY_UP);
+  input->down = get_key_status(keycode_internal_wrt_numlock, IKEY_DOWN);
+  input->right = get_key_status(keycode_internal_wrt_numlock, IKEY_RIGHT);
+  input->left = get_key_status(keycode_internal_wrt_numlock, IKEY_LEFT);
+  input->bomb = get_key_status(keycode_internal_wrt_numlock, IKEY_DELETE);
+}
+
+static void update_player_input_state(struct world *mzx_world)
+{
+  int player_id;
+
+  for(player_id = 0; player_id < NUM_PLAYERS; player_id++)
+  {
+    update_one_player_input_state(mzx_world, player_id);
+  }
+}
+
 static void update_one_player_input(struct world *mzx_world, int player_id)
 {
   struct board *cur_board = mzx_world->current_board;
   struct player *player = &mzx_world->players[player_id];
-  int space_pressed = get_key_status(keycode_internal_wrt_numlock, IKEY_SPACE);
-  int up_pressed = get_key_status(keycode_internal_wrt_numlock, IKEY_UP);
-  int down_pressed = get_key_status(keycode_internal_wrt_numlock, IKEY_DOWN);
-  int right_pressed = get_key_status(keycode_internal_wrt_numlock, IKEY_RIGHT);
-  int left_pressed = get_key_status(keycode_internal_wrt_numlock, IKEY_LEFT);
-  int del_pressed = get_key_status(keycode_internal_wrt_numlock, IKEY_DELETE);
+  struct player_input *input = &player->input.s;
 
   // Shoot
-  if(space_pressed && mzx_world->bi_shoot_status)
+  if(input->shoot && mzx_world->bi_shoot_status)
   {
     if(!player->shoot_cooldown && !cur_board->player_attack_locked)
     {
       int move_dir = -1;
 
-      if(up_pressed)
+      if(input->up)
         move_dir = 0;
       else
 
-      if(down_pressed)
+      if(input->down)
         move_dir = 1;
       else
 
-      if(right_pressed)
+      if(input->right)
         move_dir = 2;
       else
 
-      if(left_pressed)
+      if(input->left)
         move_dir = 3;
 
       if(move_dir != -1)
@@ -399,7 +418,7 @@ static void update_one_player_input(struct world *mzx_world, int player_id)
   else
 
   // Player movement
-  if(up_pressed && !cur_board->player_ns_locked)
+  if(input->up && !cur_board->player_ns_locked)
   {
     int key_up_delay = player->key_up_delay;
     if((key_up_delay == 0) || (key_up_delay > REPEAT_WAIT))
@@ -412,7 +431,7 @@ static void update_one_player_input(struct world *mzx_world, int player_id)
   }
   else
 
-  if(down_pressed && !cur_board->player_ns_locked)
+  if(input->down && !cur_board->player_ns_locked)
   {
     int key_down_delay = player->key_down_delay;
     if((key_down_delay == 0) || (key_down_delay > REPEAT_WAIT))
@@ -426,7 +445,7 @@ static void update_one_player_input(struct world *mzx_world, int player_id)
   }
   else
 
-  if(right_pressed && !cur_board->player_ew_locked)
+  if(input->right && !cur_board->player_ew_locked)
   {
     int key_right_delay = player->key_right_delay;
     if((key_right_delay == 0) || (key_right_delay > REPEAT_WAIT))
@@ -440,7 +459,7 @@ static void update_one_player_input(struct world *mzx_world, int player_id)
   }
   else
 
-  if(left_pressed && !cur_board->player_ew_locked)
+  if(input->left && !cur_board->player_ew_locked)
   {
     int key_left_delay = player->key_left_delay;
     if((key_left_delay == 0) || (key_left_delay > REPEAT_WAIT))
@@ -458,7 +477,7 @@ static void update_one_player_input(struct world *mzx_world, int player_id)
   // locks the player when moving in water.
   // NOTE: the pre-port behavior was to reset these on individual key releases.
   // From user feedback, this behavior generally seems preferred.
-  if(!up_pressed && !down_pressed && !right_pressed && !left_pressed)
+  if(!input->up && !input->down && !input->right && !input->left)
   {
     player->key_up_delay = 0;
     player->key_down_delay = 0;
@@ -467,7 +486,7 @@ static void update_one_player_input(struct world *mzx_world, int player_id)
   }
 
   // Bomb
-  if(del_pressed && !cur_board->player_attack_locked)
+  if(input->bomb && !cur_board->player_attack_locked)
   {
     int offset =
      xy_to_offset(cur_board, player->x, player->y);
@@ -738,7 +757,10 @@ void update_world(context *ctx, boolean is_title)
   update_player_wind(mzx_world);
 
   if(!is_title && (!mzx_world->dead))
+  {
+    update_player_input_state(mzx_world);
     update_player_input(mzx_world);
+  }
 
   // Global robot
   if(mzx_world->current_board->robot_list[0])
