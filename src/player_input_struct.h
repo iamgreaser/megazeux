@@ -60,7 +60,7 @@ struct player_input
 union player_input_union
 {
   struct player_input s;
-  boolean a[16];
+  boolean a[NUM_PINP];
 };
 
 __M_END_DECLS

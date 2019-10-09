@@ -36,7 +36,7 @@ struct key_to_player_input
 union key_to_player_input_union
 {
   struct key_to_player_input s;
-  enum keycode a[16];
+  enum keycode a[NUM_PINP];
 };
 
 union key_to_player_input_union player_input_map[NUM_PLAYERS];
