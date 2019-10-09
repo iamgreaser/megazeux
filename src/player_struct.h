@@ -98,4 +98,4 @@ struct player
 
 __M_END_DECLS
 
-#endif // __WORLD_STRUCT_H
+#endif // __PLAYER_STRUCT_H
