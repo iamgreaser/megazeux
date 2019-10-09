@@ -24,31 +24,20 @@
 #include "player_struct.h"
 
 // TODO: Do a many-to-many mapping for each player input somehow
-struct key_to_player_input
-{
-  enum keycode up;
-  enum keycode down;
-  enum keycode right;
-  enum keycode left;
-  enum keycode shoot;
-  enum keycode bomb;
-};
-
-union key_to_player_input_union
-{
-  struct key_to_player_input s;
-  enum keycode a[NUM_PINP];
-};
-
-union key_to_player_input_union player_input_map[NUM_PLAYERS];
+static enum keycode player_input_map[NUM_PLAYERS][NUM_PINP];
 
 // TODO:
 // - add config, and use from input.c/h:
 //     enum keycode find_keycode(const char *name)
 
-static enum keycode get_key_for_player_input(
- struct player *player, int player_id, int pinp)
+static enum keycode get_default_key_for_player_input(int player_id, int pinp)
 {
+  // TODO: Add hook into configure.c and allow adding new binds
+  if(false && player_id != 0)
+  {
+    return IKEY_UNKNOWN;
+  }
+
   switch((enum player_input_bits)pinp)
   {
     case PINP_SHOOT: return IKEY_SPACE;
@@ -61,22 +50,41 @@ static enum keycode get_key_for_player_input(
   }
 }
 
+static enum keycode get_key_for_player_input(int player_id, int pinp)
+{
+  return player_input_map[player_id][pinp];
+}
+
+void init_player_input(void)
+{
+  int player_id, pinp;
+
+  for(player_id = 0; player_id < NUM_PLAYERS; player_id++)
+  {
+    for(pinp = 0; pinp < NUM_PINP; pinp++)
+    {
+      player_input_map[player_id][pinp] = (
+       get_default_key_for_player_input(player_id, pinp));
+    }
+  }
+}
 
 void update_one_player_input_state(struct player *player, int player_id)
 {
-  int i;
+  int pinp;
 
   // TODO: make these bindable per-player in the config
-  for(i = 0; i < NUM_PINP; i++)
+  for(pinp = 0; pinp < NUM_PINP; pinp++)
   {
-    enum keycode key = get_key_for_player_input(player, player_id, i);
+    enum keycode key = get_key_for_player_input(player_id, pinp);
     if(key != IKEY_UNKNOWN)
     {
-      player->input.a[i] = get_key_status(keycode_internal_wrt_numlock, key);
+      player->input.a[pinp] = get_key_status(
+       keycode_internal_wrt_numlock, key);
     }
     else
     {
-      player->input.a[i] = false;
+      player->input.a[pinp] = false;
     }
   }
 }
