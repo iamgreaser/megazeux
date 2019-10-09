@@ -31,6 +31,7 @@
 #include "graphics.h"
 #include "idarray.h"
 #include "idput.h"
+#include "player_input.h"
 #include "scrdisp.h" // strlencolor
 #include "sprite.h"
 #include "robot.h"
@@ -336,27 +337,14 @@ static void update_player_wind(struct world *mzx_world)
  * May result in a context change.
  */
 
-static void update_one_player_input_state(struct world *mzx_world, int player_id)
-{
-  struct player *player = &mzx_world->players[player_id];
-  struct player_input *input = &player->input.s;
-
-  // TODO: make these bindable per-player in the config
-  input->shoot = get_key_status(keycode_internal_wrt_numlock, IKEY_SPACE);
-  input->up = get_key_status(keycode_internal_wrt_numlock, IKEY_UP);
-  input->down = get_key_status(keycode_internal_wrt_numlock, IKEY_DOWN);
-  input->right = get_key_status(keycode_internal_wrt_numlock, IKEY_RIGHT);
-  input->left = get_key_status(keycode_internal_wrt_numlock, IKEY_LEFT);
-  input->bomb = get_key_status(keycode_internal_wrt_numlock, IKEY_DELETE);
-}
-
 static void update_player_input_state(struct world *mzx_world)
 {
   int player_id;
 
   for(player_id = 0; player_id < NUM_PLAYERS; player_id++)
   {
-    update_one_player_input_state(mzx_world, player_id);
+    struct player *player = &mzx_world->players[player_id];
+    update_one_player_input_state(player, player_id);
   }
 }
 
