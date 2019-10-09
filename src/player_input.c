@@ -23,6 +23,7 @@
 #include "keysym.h"
 #include "player_struct.h"
 
+// TODO: Do a many-to-many mapping for each player input somehow
 struct key_to_player_input
 {
   enum keycode up;
@@ -45,15 +46,37 @@ union key_to_player_input_union player_input_map[NUM_PLAYERS];
 // - add config, and use from input.c/h:
 //     enum keycode find_keycode(const char *name)
 
+static enum keycode get_key_for_player_input(
+ struct player *player, int player_id, int pinp)
+{
+  switch((enum player_input_bits)pinp)
+  {
+    case PINP_SHOOT: return IKEY_SPACE;
+    case PINP_UP: return IKEY_UP;
+    case PINP_DOWN: return IKEY_DOWN;
+    case PINP_RIGHT: return IKEY_RIGHT;
+    case PINP_LEFT: return IKEY_LEFT;
+    case PINP_BOMB: return IKEY_DELETE;
+    default: return IKEY_UNKNOWN;
+  }
+}
+
+
 void update_one_player_input_state(struct player *player, int player_id)
 {
-  struct player_input *input = &player->input.s;
+  int i;
 
   // TODO: make these bindable per-player in the config
-  input->shoot = get_key_status(keycode_internal_wrt_numlock, IKEY_SPACE);
-  input->up = get_key_status(keycode_internal_wrt_numlock, IKEY_UP);
-  input->down = get_key_status(keycode_internal_wrt_numlock, IKEY_DOWN);
-  input->right = get_key_status(keycode_internal_wrt_numlock, IKEY_RIGHT);
-  input->left = get_key_status(keycode_internal_wrt_numlock, IKEY_LEFT);
-  input->bomb = get_key_status(keycode_internal_wrt_numlock, IKEY_DELETE);
+  for(i = 0; i < NUM_PINP; i++)
+  {
+    enum keycode key = get_key_for_player_input(player, player_id, i);
+    if(key != IKEY_UNKNOWN)
+    {
+      player->input.a[i] = get_key_status(keycode_internal_wrt_numlock, key);
+    }
+    else
+    {
+      player->input.a[i] = false;
+    }
+  }
 }
