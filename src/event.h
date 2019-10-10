@@ -257,6 +257,7 @@ Uint32 get_last_key_released(enum keycode_type type);
 void set_unfocus_pause(boolean value);
 void set_num_buffered_events(Uint8 value);
 
+enum keycode find_keycode(const char *name);
 boolean joystick_parse_map_value(const char *value, Sint16 *binding);
 void joystick_map_button(int first, int last, int button, const char *value,
  boolean is_global);

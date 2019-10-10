@@ -1247,7 +1247,7 @@ static const struct joystick_action_name joystick_axis_names[] =
   { "ry",       JOY_AXIS_RIGHT_Y },
 };
 
-static enum keycode find_keycode(const char *name)
+enum keycode find_keycode(const char *name)
 {
   int top = ARRAY_SIZE(keycode_names) - 1;
   int bottom = 0;

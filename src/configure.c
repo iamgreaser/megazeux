@@ -31,6 +31,7 @@
 #include "event.h"
 #include "rasm.h"
 #include "fsafeopen.h"
+#include "player_input.h"
 #include "util.h"
 #include "sys/stat.h"
 
@@ -416,6 +417,12 @@ static void config_enable_oversampling(struct config_info *conf, char *name,
   conf->oversampling_on = strtol(value, NULL, 10);
 }
 
+static void config_player_input_bind_set(struct config_info *conf, char *name,
+ char *value, char *extended_data)
+{
+  player_input_bind_set(name, value);
+}
+
 static void config_resample_mode(struct config_info *conf, char *name,
  char *value, char *extended_data)
 {
@@ -539,18 +546,6 @@ static void joy_axis_set(struct config_info *conf, char *name,
   }
 }
 
-static void joy_button_set(struct config_info *conf, char *name,
- char *value, char *extended_data)
-{
-  unsigned int first, last, button;
-
-  if(joy_num(&name, &first, &last) && joy_button_name(name, &button))
-  {
-    // Right now do a global binding at startup and a game binding otherwise.
-    joystick_map_button(first - 1, last - 1, button - 1, value, is_startup);
-  }
-}
-
 static void joy_hat_set(struct config_info *conf, char *name,
  char *value, char *extended_data)
 {
@@ -658,6 +653,18 @@ static void config_set_pcs_volume(struct config_info *conf, char *name,
   // FIXME sloppy validation
   unsigned long new_volume = strtoul(value, NULL, 10);
   conf->pc_speaker_volume = MIN(new_volume, 10);
+}
+
+static void joy_button_set(struct config_info *conf, char *name,
+ char *value, char *extended_data)
+{
+  unsigned int first, last, button;
+
+  if(joy_num(&name, &first, &last) && joy_button_name(name, &button))
+  {
+    // Right now do a global binding at startup and a game binding otherwise.
+    joystick_map_button(first - 1, last - 1, button - 1, value, is_startup);
+  }
 }
 
 static void config_mask_midchars(struct config_info *conf, char *name,
@@ -878,6 +885,7 @@ static const struct config_entry config_options[] =
   { "pause_on_unfocus", pause_on_unfocus, false },
   { "pc_speaker_on", config_set_pc_speaker, false },
   { "pc_speaker_volume", config_set_pcs_volume, false },
+  { "player!.*", config_player_input_bind_set, false },
   { "resample_mode", config_resample_mode, false },
   { "sample_volume", config_set_sam_volume, false },
   { "save_file", config_save_file, false },

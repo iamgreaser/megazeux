@@ -28,8 +28,9 @@ __M_BEGIN_DECLS
 #include "player_struct.h"
 #include "player_input_struct.h"
 
-void init_player_input(void);
+CORE_LIBSPEC void init_player_input(void);
 void update_one_player_input_state(struct player *player, int player_id);
+void player_input_bind_set(char *name, char *value);
 
 __M_END_DECLS
 
