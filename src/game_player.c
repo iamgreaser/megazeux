@@ -1264,7 +1264,12 @@ void move_player(struct world *mzx_world, int dir)
 
   for(player_id = 0; player_id < NUM_PLAYERS; player_id++)
   {
-    move_one_player(mzx_world, player_id, dir);
+    struct player *player = &mzx_world->players[player_id];
+
+    if(player_id == 0 || player->separated)
+    {
+      move_one_player(mzx_world, player_id, dir);
+    }
   }
 }
 
