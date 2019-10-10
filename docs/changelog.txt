@@ -1,3 +1,81 @@
+September 23rd, 2019 - MZX 2.92b
+
+This release fixes several bugs, notably 3DS and Wii rendering
+issues and a bug where the wrong palette would be saved while
+COLOR FADE OUT was active. Also in this release are performance
+and usability improvements for the NDS and 3DS ports and a new
+frontend for HTML5/Emscripten builds (special thanks to asie).
+
+USERS
+
++ Fixed a bug where mouse warping both mouse coordinates would
+  not actually warp both coordinates.
++ Fixed a port regression where save files would be saved with
+  the wrong color intensities while COLOR FADE OUT was active
+  (or during the first cycle of a board for <2.90 worlds). This
+  fixes fading bugs in Ruin Diver 3.
++ Added compatibility for a bug where the robot message box
+  would disable COLOR FADE OUT in versions 2.83 through 2.90X.
+  This fixes several BKZX games.
++ Fixed checkres bugs separately preventing detection of global
+  robots in both world formats.
++ Fixed 3DS renderer bug where the UI wouldn't properly display
+  char foregrounds with extended graphics enabled.
++ Fixed 3DS renderer bug where sprites containing chars with
+  transparent foregrounds wouldn't draw any char backgrounds.
++ Fixed 3DS renderer crashes that would occur when large numbers
+  of sprites were active.
++ Improved file manager directory read times for 3DS/NDS/Wii.
++ File IO for world saving/loading is now buffered, which should
+  improve save/load times on the 3DS and Switch.
++ Enabled writing zip data descriptors for the Switch.
++ Added classic/stretch video ratio support for the 3DS and NDS
+  lower screens. (asie)
++ "classic" is now the default ratio for the 3DS, NDS, and Wii.
++ Fixed GX renderer bug where chars with both colors transparent
+  could cause various graphical bugs in normal MZX mode.
++ Fixed bug where board exits could be cleared when deleting a
+  board or after loading a world containing null boards.
++ Fixed bugs when playing STARDSTM.GDM with the libxmp engine.
++ Fixed a crash that could occur when importing a world in the
+  editor containing a null board.
++ Fixed a bug where null boards wouldn't be properly refactored
+  on the NDS while using a memory cart, causing entrances to
+  point to the wrong boards and possibly other problems.
++ Fixed a bug that could corrupt the ends of robot programs when
+  using an NDS memory cart.
++ Improved world loading times when using an NDS memory cart.
++ Improved NDS memory cart transfer speed. (asie)
++ Disabled NDS logging hacks when stdio redirect is enabled.
++ Exiting MZX on the NDS should now power off the NDS.
++ Added Emscripten frontend. (asie)
++ Fixed bug where errors in the title screen Load World window
+  could clear the rest of the screen.
++ Fixed crash that could occur when attempting to load an
+  invalid zip world.
++ Non-recursive directory deletion in the file manager now tries
+  to delete the directory itself instead of its contents. Added
+  error messages for failed file and directory deletes.
+
+DEVELOPERS
+
++ Added initial support for the dirent d_type field to help
+  avoid stat calls when reading directories.
++ Replaced most fseek calls in the legacy world loader.
++ Refactored move_current_board to be more readable.
++ Corrected some of the editor's bad extram handling and added
+  warnings to debug builds to help debug it (no platforms at the
+  present support both the editor and extram).
++ Replaced error wait_event() with update_event_status_delay().
++ Added preliminary VFS code to replace function pointer casting
+  in zip.c.
++ Fixed Wayland/X11 detection for setups that don't allow X or
+  Xorg to be run normally.
++ Unix builds should now attempt to load the icon from the
+  installed path instead of from a hardcoded path. Builds with
+  no sharedir set will use "contrib/icons/quantump.png" instead.
+
+
 July 22nd, 2019 - MZX 2.92
 
 Here's another inexcusably big minor version release. First off,

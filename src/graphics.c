@@ -544,6 +544,8 @@ void set_smzx_index(Uint32 col, Uint32 offset, Uint32 value)
 
 Uint32 get_color_intensity(Uint32 color)
 {
+  if(graphics.fade_status)
+    return graphics.saved_intensity[color];
   return graphics.current_intensity[color];
 }
 
@@ -1065,9 +1067,7 @@ void update_screen(void)
 // to use in conjuction with the next function.
 void vquick_fadeout(void)
 {
-#ifndef __EMSCRIPTEN__
   if(!has_video_initialized())
-#endif
   {
     // If we're running without video there's no point waiting 11 frames.
     insta_fadeout();
@@ -1109,9 +1109,7 @@ void vquick_fadeout(void)
 // use in conjuction with the previous function.
 void vquick_fadein(void)
 {
-#ifndef __EMSCRIPTEN__
   if(!has_video_initialized())
-#endif
   {
     // If we're running without video there's no point waiting 11 frames.
     insta_fadein();
@@ -1335,9 +1333,9 @@ static void set_window_icon(void)
     }
   }
 #else // !__WIN32__
-#if defined(CONFIG_PNG)
+#if defined(CONFIG_PNG) && defined(ICONFILE)
   {
-    SDL_Surface *icon = png_read_icon("/usr/share/icons/megazeux.png");
+    SDL_Surface *icon = png_read_icon(ICONFILE);
     if(icon)
     {
       SDL_Window *window = SDL_GetWindowFromID(sdl_window_id);

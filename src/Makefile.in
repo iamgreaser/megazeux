@@ -79,6 +79,7 @@ core_cobjs := \
   ${core_obj}/core.o              \
   ${core_obj}/counter.o           \
   ${core_obj}/data.o              \
+  ${core_obj}/distance.o          \
   ${core_obj}/error.o             \
   ${core_obj}/event.o             \
   ${core_obj}/expr.o              \
@@ -99,6 +100,7 @@ core_cobjs := \
   ${core_obj}/legacy_robot.o      \
   ${core_obj}/legacy_world.o      \
   ${core_obj}/mzm.o               \
+  ${core_obj}/player_input.o      \
   ${core_obj}/render.o            \
   ${core_obj}/robot.o             \
   ${core_obj}/run_robot.o         \
@@ -107,6 +109,7 @@ core_cobjs := \
   ${core_obj}/sprite.o            \
   ${core_obj}/str.o               \
   ${core_obj}/util.o              \
+  ${core_obj}/vfs.o               \
   ${core_obj}/window.o            \
   ${core_obj}/world.o             \
   ${core_obj}/zip.o
@@ -135,12 +138,12 @@ endif
 # These are really just hacks and should be moved elsewhere
 #
 ifeq (${BUILD_NDS},1)
-core_cobjs += arch/nds/ram.o arch/nds/exception.o
-core_cobjs += arch/nds/dlmalloc.o
+core_cobjs += arch/nds/exception.o
 core_cobjs += arch/nds/platform.o arch/nds/event.o
 core_cobjs += arch/nds/render.o arch/nds/evq.o
 ifneq (${BUILD_DEBYTECODE},1)
-core_cobjs += arch/nds/extmem.o
+core_cobjs += arch/nds/dlmalloc.o
+core_cobjs += arch/nds/ram.o arch/nds/extmem.o
 endif
 endif
 
@@ -278,7 +281,7 @@ endif
 
 ifeq (${BUILD_REALITY},1)
 core_cxxobjs += ${audio_obj}/audio_reality.o
-LINK_CC := ${CXX}
+#LINK_CC := ${CXX}
 endif
 
 ifeq (${LIBPNG},1)

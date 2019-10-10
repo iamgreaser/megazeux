@@ -82,6 +82,7 @@ usage() {
 	echo "  --disable-check-alloc   Disables memory allocator error handling."
 	echo "  --disable-khash         Disables using khash for counter/string lookups."
 	echo "  --enable-debytecode     Enable experimental 'debytecode' transform."
+	echo "  --enable-multiplayer    Enable experimental multiplayer support."
 	echo "  --disable-libsdl2       Disable SDL 2.0 support (falls back on 1.2)."
 	echo "  --enable-stdio-redirect Redirect console output to stdout.txt/stderr.txt."
 	echo "  --enable-fps            Enable frames-per-second counter."
@@ -154,6 +155,7 @@ GLES="false"
 CHECK_ALLOC="true"
 KHASH="true"
 DEBYTECODE="false"
+MULTIPLAYER="false"
 LIBSDL2="true"
 STDIO_REDIRECT="false"
 GAMECONTROLLERDB="true"
@@ -357,6 +359,9 @@ while [ "$1" != "" ]; do
 
 	[ "$1" = "--enable-debytecode" ]  && DEBYTECODE="true"
 	[ "$1" = "--disable-debytecode" ] && DEBYTECODE="false"
+
+	[ "$1" = "--enable-multiplayer" ]  && MULTIPLAYER="true"
+	[ "$1" = "--disable-multiplayer" ] && MULTIPLAYER="false"
 
 	[ "$1" = "--enable-libsdl2" ]  && LIBSDL2="true"
 	[ "$1" = "--disable-libsdl2" ] && LIBSDL2="false"
@@ -633,10 +638,8 @@ fi
 # Use GLES on Android.
 #
 if [ "$PLATFORM" = "android" ]; then
-	#echo "Force-enabling OpenGL ES support (Android)."
-	#GLES="true"
-	echo "Force-enabling OpenGL ES support (Android; broken, TODO)."
-	GL="false"
+	echo "Force-enabling OpenGL ES support (Android)."
+	GLES="true"
 fi
 
 #
@@ -995,8 +998,8 @@ if [ "$PLATFORM" = "unix" -o "$PLATFORM" = "unix-devel" \
 	#
 	if [ "$X11" = "true" ]; then
 		for XBIN in X Xorg; do
-			# try to run X
-			$XBIN -version >/dev/null 2>&1
+			# check if X exists
+			command -v $XBIN >/dev/null 2>&1
 
 			# X/Xorg queried successfully
 			[ "$?" = "0" ] && break
@@ -1249,6 +1252,16 @@ if [ "$ICON" = "true" ]; then
 	#
 	if [ "$PLATFORM" = "mingw" ]; then
 		echo "EMBED_ICONS=1" >> platform.inc
+	else
+		#
+		# Also get the (probable) icon path...
+		#
+		if [ "$SHAREDIR" = "." ]; then
+			ICONFILE="contrib/icons/quantump.png"
+		else
+			ICONFILE="$SHAREDIR/icons/megazeux.png"
+		fi
+		echo "#define ICONFILE \"$ICONFILE\"" >> src/config.h
 	fi
 else
 	echo "Icon branding disabled."
@@ -1336,6 +1349,17 @@ if [ "$DEBYTECODE" = "true" ]; then
 	echo "BUILD_DEBYTECODE=1" >> platform.inc
 else
 	echo "Experimental 'debytecode' transform disabled."
+fi
+
+#
+# Experimental multiplayer, if enabled
+#
+if [ "$MULTIPLAYER" = "true" ]; then
+	echo "Experimental multiplayer enabled."
+	echo "#define CONFIG_MULTIPLAYER" >> src/config.h
+	echo "BUILD_MULTIPLAYER=1" >> platform.inc
+else
+	echo "Experimental multiplayer disabled."
 fi
 
 #

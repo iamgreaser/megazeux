@@ -1494,6 +1494,7 @@ static inline int load_world_counters(struct world *mzx_world,
 
   enum zip_error result;
   unsigned int method;
+  boolean is_stream = false;
 
   result = zip_get_next_method(zp, &method);
   if(result != ZIP_SUCCESS)
@@ -1503,6 +1504,7 @@ static inline int load_world_counters(struct world *mzx_world,
   if(zp->is_memory && method == ZIP_M_NONE)
   {
     zip_read_open_mem_stream(zp, &mf);
+    is_stream = true;
   }
 
   else
@@ -1564,16 +1566,10 @@ static inline int load_world_counters(struct world *mzx_world,
   sort_counter_list(counter_list);
 #endif
 
-  if(zp->is_memory && method == ZIP_M_NONE)
-  {
-    zip_read_close_mem_stream(zp);
-  }
+  if(is_stream)
+    zip_read_close_stream(zp);
 
-  else
-  {
-    free(buffer);
-  }
-
+  free(buffer);
   return ZIP_SUCCESS;
 }
 
@@ -1623,6 +1619,7 @@ static inline int load_world_strings_mem(struct world *mzx_world,
   // implementation.
   struct memfile mf;
   char *buffer = NULL;
+  boolean is_stream = false;
 
   struct string_list *string_list = &(mzx_world->string_list);
   struct string *src_string;
@@ -1638,6 +1635,7 @@ static inline int load_world_strings_mem(struct world *mzx_world,
   if(zp->is_memory && method == ZIP_M_NONE)
   {
     zip_read_open_mem_stream(zp, &mf);
+    is_stream = true;
   }
 
   else
@@ -1703,16 +1701,10 @@ static inline int load_world_strings_mem(struct world *mzx_world,
   sort_string_list(string_list);
 #endif
 
-  if(zp->is_memory && method == ZIP_M_NONE)
-  {
-    zip_read_close_mem_stream(zp);
-  }
+  if(is_stream)
+    zip_read_close_stream(zp);
 
-  else
-  {
-    free(buffer);
-  }
-
+  free(buffer);
   return ZIP_SUCCESS;
 }
 
@@ -1812,6 +1804,9 @@ void save_counters_file(struct world *mzx_world, const char *file)
   if(!fp)
     return;
 
+  // TODO temporary fix to improve save times on the embedded platforms.
+  setvbuf(fp, NULL, _IOFBF, 16384);
+
   if(!fwrite("COUNTERS", 8, 1, fp))
     goto err;
 
@@ -1844,6 +1839,9 @@ int load_counters_file(struct world *mzx_world, const char *file)
     error_message(E_FILE_DOES_NOT_EXIST, 0, NULL);
     return -1;
   }
+
+  // TODO temporary fix to improve load times on the embedded platforms.
+  setvbuf(fp, NULL, _IOFBF, 16384);
 
   if(!fread(magic, 8, 1, fp))
     goto err_close_file;
@@ -1998,6 +1996,9 @@ static int save_world_zip(struct world *mzx_world, const char *file,
   fp = fopen_unsafe(file, "wb");
   if(!fp)
     goto err;
+
+  // TODO temporary fix to improve save times on the embedded platforms.
+  setvbuf(fp, NULL, _IOFBF, 16384);
 
   // Header
   if(!savegame)
@@ -2422,14 +2423,14 @@ void refactor_board_list(struct world *mzx_world,
   int d_param, d_flag;
   int board_width;
   int board_height;
-  int relocate_current = 1;
+  int new_current_id = NO_BOARD;
 
   int num_boards = mzx_world->num_boards;
   struct board **board_list = mzx_world->board_list;
   struct board *cur_board;
 
-  if(board_list[mzx_world->current_board_id] == NULL)
-    relocate_current = 0;
+  if(board_list[mzx_world->current_board_id])
+    new_current_id = board_id_translation_list[mzx_world->current_board_id];
 
   free(board_list);
   board_list =
@@ -2444,6 +2445,10 @@ void refactor_board_list(struct world *mzx_world,
     cur_board = board_list[i];
     board_width = cur_board->board_width;
     board_height = cur_board->board_height;
+
+    if(i != new_current_id)
+      retrieve_board_from_extram(cur_board);
+
     level_id = cur_board->level_id;
     level_param = cur_board->level_param;
 
@@ -2467,15 +2472,18 @@ void refactor_board_list(struct world *mzx_world,
     {
       d_param = cur_board->board_dir[i2];
 
-      if(d_param < new_list_size)
+      if(d_param < num_boards)
         cur_board->board_dir[i2] = board_id_translation_list[d_param];
       else
         cur_board->board_dir[i2] = NO_BOARD;
     }
+
+    if(i != new_current_id)
+      store_board_to_extram(cur_board);
   }
 
   // Fix current board
-  if(relocate_current)
+  if(new_current_id != NO_BOARD)
   {
     d_param = mzx_world->current_board_id;
     d_param = board_id_translation_list[d_param];
@@ -2742,6 +2750,9 @@ static FILE *try_open_world(const char *file, boolean savegame,
   if(!fp)
     return NULL;
 
+  // TODO temporary fix to improve load times on the embedded platforms.
+  setvbuf(fp, NULL, _IOFBF, 16384);
+
   if(savegame)
   {
     if(!fread(magic, 5, 1, fp))
@@ -2813,7 +2824,10 @@ static struct zip_archive *try_load_zip_world(struct world *mzx_world,
   zp = zip_open_fp_read(fp);
 
   if(!zp)
+  {
+    fp = NULL;
     goto err_close;
+  }
 
   result = validate_world_zip(mzx_world, zp, savegame, file_version);
 
@@ -2859,7 +2873,7 @@ err_close:
 
   else
   {
-    if (v > MZX_VERSION)
+    if(v > MZX_VERSION)
     {
       error_message(E_WORLD_FILE_VERSION_TOO_RECENT, v, NULL);
     }
@@ -2880,9 +2894,14 @@ err_close:
 err_protected:
   *protected = pr;
   if(zp)
+  {
     zip_close(zp, NULL);
+  }
   else
+
+  if(fp)
     fclose(fp);
+
   return NULL;
 }
 
@@ -2964,14 +2983,15 @@ void change_board_set_values(struct world *mzx_world)
 {
   // The sequel to change_board; set special values on board (re)entry.
   struct board *cur_board = mzx_world->current_board;
+  struct player *player = &mzx_world->players[0];
 
   // Set the timer.
   set_counter(mzx_world, "TIME", cur_board->time_limit, 0);
 
   // Set the player restart position.
   find_player(mzx_world);
-  mzx_world->player_restart_x = mzx_world->player_x;
-  mzx_world->player_restart_y = mzx_world->player_y;
+  mzx_world->player_restart_x = player->x;
+  mzx_world->player_restart_y = player->y;
 }
 
 void change_board_load_assets(struct world *mzx_world)
@@ -3235,6 +3255,7 @@ void clear_world(struct world *mzx_world)
   // Do this before loading, when there's a world
 
   int i;
+  int player_id;
   int num_boards = mzx_world->num_boards;
   struct board **board_list = mzx_world->board_list;
 
@@ -3278,7 +3299,11 @@ void clear_world(struct world *mzx_world)
 
   mzx_world->current_cycle_odd = false;
   mzx_world->current_cycle_frozen = false;
-  mzx_world->player_shoot_cooldown = 0;
+  for(player_id = 0; player_id < NUM_PLAYERS; player_id++)
+  {
+    struct player *player = &mzx_world->players[player_id];
+    player->shoot_cooldown = 0;
+  }
   mzx_world->active = 0;
 
   audio_end_sample();

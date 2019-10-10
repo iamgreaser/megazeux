@@ -12,9 +12,14 @@ arch/android/project/app/jni/SDL2
 arch/android/project/app/jni/lib
 arch/android/project/app/jni/libogg
 arch/android/project/app/jni/libvorbis
+arch/android/project/app/release/app-release.apk
 arch/android/project/app/src/main/res/raw/assets.zip
 arch/android/project/app/*.iml
 arch/android/project/build
+arch/android/project/local.properties
+arch/emscripten/web/mzxrun_web.js
+arch/emscripten/web/node_modules
+arch/emscripten/web/package-lock.json
 arch/mingw/pefix.d
 arch/mingw/pefix.exe
 arch/mingw/pefix.o
@@ -99,6 +104,7 @@ mzxrun.nso
 mzxrun.pdb
 mzxrun.smdh
 mzxrun.wasm
+mzxrun.wasm.map
 /mzxrun
 PARAM.SFO
 platform.inc

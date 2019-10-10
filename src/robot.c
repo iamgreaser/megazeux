@@ -425,6 +425,7 @@ void load_robot(struct world *mzx_world, struct robot *cur_robot,
   unsigned int method;
   unsigned int board_id;
   unsigned int id;
+  boolean is_stream = false;
 
   zip_get_next_prop(zp, NULL, &board_id, &id);
   zip_get_next_method(zp, &method);
@@ -437,6 +438,7 @@ void load_robot(struct world *mzx_world, struct robot *cur_robot,
   if(zp->is_memory && method == ZIP_M_NONE)
   {
     zip_read_open_mem_stream(zp, &mf);
+    is_stream = true;
   }
 
   else
@@ -453,15 +455,10 @@ void load_robot(struct world *mzx_world, struct robot *cur_robot,
     error_message(E_BOARD_ROBOT_CORRUPT, (board_id << 8)|id, NULL);
   }
 
-  if(zp->is_memory && method == ZIP_M_NONE)
-  {
-    zip_read_close_mem_stream(zp);
-  }
+  if(is_stream)
+    zip_read_close_stream(zp);
 
-  else
-  {
-    free(buffer);
-  }
+  free(buffer);
 }
 
 struct robot *load_robot_allocate(struct world *mzx_world,
@@ -1451,9 +1448,11 @@ static void send_sensor_command(struct world *mzx_world, int id, int command)
   char *level_color = src_board->level_color;
   int board_width = src_board->board_width;
   int board_height = src_board->board_height;
-  int player_x = mzx_world->player_x;
-  int player_y = mzx_world->player_y;
-  int player_offset = player_x + (player_y * board_width);
+  // TODO: Get some testworlds for multiplayer sensor tests,
+  // then get all that jazz working.
+  // For singleplayer this should still work fine, touch wood.
+  struct player *player = &mzx_world->players[0];
+  int player_offset = player->x + (player->y * board_width);
   int offset;
   int move_status;
 
@@ -1462,12 +1461,12 @@ static void send_sensor_command(struct world *mzx_world, int id, int command)
   {
     // Don't bother for a char cmd
     under = 0;
-    if((level_under_id[player_offset] == 122) &&
+    if((level_under_id[player_offset] == SENSOR) &&
      (level_under_param[player_offset] == id))
     {
       under = 1;
-      x = player_x;
-      y = player_y;
+      x = player->x;
+      y = player->y;
     }
     else
     {
@@ -1476,7 +1475,7 @@ static void send_sensor_command(struct world *mzx_world, int id, int command)
       {
         for(x = 0; x < board_width; x++, offset++)
         {
-          if((level_id[offset] == 122) &&
+          if((level_id[offset] == SENSOR) &&
            (level_param[offset] == id))
           {
             found = 1;
@@ -1517,9 +1516,7 @@ static void send_sensor_command(struct world *mzx_world, int id, int command)
         {
           // Find player...
           find_player(mzx_world);
-          player_x = mzx_world->player_x;
-          player_y = mzx_world->player_y;
-          player_offset = player_x + (player_y * board_width);
+          player_offset = player->x + (player->y * board_width);
 
           move_status = HIT_PLAYER;
         }
@@ -1547,7 +1544,7 @@ static void send_sensor_command(struct world *mzx_world, int id, int command)
         mzx_world->under_player_id = level_under_id[player_offset];
         mzx_world->under_player_param = level_under_param[player_offset];
         mzx_world->under_player_color = level_under_color[player_offset];
-        level_under_id[player_offset] = 122;
+        level_under_id[player_offset] = SENSOR;
         level_under_param[player_offset] = id;
         level_under_color[player_offset] = level_color[x + (y * board_width)];
         id_remove_top(mzx_world, x, y);
@@ -1940,6 +1937,8 @@ void prefix_first_last_xy(struct world *mzx_world, int *fx, int *fy,
  int *lx, int *ly, int robotx, int roboty)
 {
   struct board *src_board = mzx_world->current_board;
+  const int player_id = 0; // TODO: Consider other players for MP-aware stuff
+  struct player *player = &mzx_world->players[player_id];
   int board_width = src_board->board_width;
   int board_height = src_board->board_height;
   int tfx = *fx;
@@ -1961,8 +1960,8 @@ void prefix_first_last_xy(struct world *mzx_world, int *fx, int *fy,
     case 6:
     {
       find_player(mzx_world);
-      tfx += mzx_world->player_x;
-      tfy += mzx_world->player_y;
+      tfx += player->x;
+      tfy += player->y;
       break;
     }
 
@@ -1995,8 +1994,8 @@ void prefix_first_last_xy(struct world *mzx_world, int *fx, int *fy,
     case 6:
     {
       find_player(mzx_world);
-      tlx += mzx_world->player_x;
-      tly += mzx_world->player_y;
+      tlx += player->x;
+      tly += player->y;
       break;
     }
 
@@ -2053,6 +2052,8 @@ void prefix_first_last_xy(struct world *mzx_world, int *fx, int *fy,
 void prefix_first_xy_var(struct world *mzx_world, int *fx, int *fy,
  int robotx, int roboty, int width, int height)
 {
+  const int player_id = 0; // TODO: Consider other players for MP-aware stuff
+  struct player *player = &mzx_world->players[player_id];
   int tfx = *fx;
   int tfy = *fy;
 
@@ -2070,8 +2071,8 @@ void prefix_first_xy_var(struct world *mzx_world, int *fx, int *fy,
     case 6:
     {
       find_player(mzx_world);
-      tfx += mzx_world->player_x;
-      tfy += mzx_world->player_y;
+      tfx += player->x;
+      tfy += player->y;
       break;
     }
 
@@ -2109,6 +2110,8 @@ void prefix_first_xy_var(struct world *mzx_world, int *fx, int *fy,
 void prefix_last_xy_var(struct world *mzx_world, int *lx, int *ly,
  int robotx, int roboty, int width, int height)
 {
+  const int player_id = 0; // TODO: Consider other players for MP-aware stuff
+  struct player *player = &mzx_world->players[player_id];
   int tlx = *lx;
   int tly = *ly;
 
@@ -2126,8 +2129,8 @@ void prefix_last_xy_var(struct world *mzx_world, int *lx, int *ly,
     case 6:
     {
       find_player(mzx_world);
-      tlx += mzx_world->player_x;
-      tly += mzx_world->player_y;
+      tlx += player->x;
+      tly += player->y;
       break;
     }
 
@@ -2165,6 +2168,8 @@ void prefix_last_xy_var(struct world *mzx_world, int *lx, int *ly,
 void prefix_mid_xy_var(struct world *mzx_world, int *mx, int *my,
  int robotx, int roboty, int width, int height)
 {
+  const int player_id = 0; // TODO: Consider other players for MP-aware stuff
+  struct player *player = &mzx_world->players[player_id];
   int tmx = *mx;
   int tmy = *my;
 
@@ -2180,8 +2185,8 @@ void prefix_mid_xy_var(struct world *mzx_world, int *mx, int *my,
     case 2:
     {
       find_player(mzx_world);
-      tmx += mzx_world->player_x;
-      tmy += mzx_world->player_y;
+      tmx += player->x;
+      tmy += player->y;
       break;
     }
 
@@ -2212,6 +2217,8 @@ void prefix_mid_xy_var(struct world *mzx_world, int *mx, int *my,
 // Unbounded version.
 void prefix_mid_xy_unbound(struct world *mzx_world, int *mx, int *my, int x, int y)
 {
+  const int player_id = 0; // TODO: Consider other players for MP-aware stuff
+  struct player *player = &mzx_world->players[player_id];
   int tmx = *mx;
   int tmy = *my;
 
@@ -2227,8 +2234,8 @@ void prefix_mid_xy_unbound(struct world *mzx_world, int *mx, int *my, int x, int
     case 2:
     {
       find_player(mzx_world);
-      tmx += mzx_world->player_x;
-      tmy += mzx_world->player_y;
+      tmx += player->x;
+      tmy += player->y;
       break;
     }
 
@@ -2824,7 +2831,9 @@ void robot_box_display(struct world *mzx_world, char *program,
 
   } while(1);
 
-  dialog_fadeout();
+  // Due to a faulty check, 2.83 through 2.91f always stay faded in here.
+  if((mzx_world->version < V283) || (mzx_world->version >= V291))
+    dialog_fadeout();
 
   // Restore screen and exit
   m_hide();

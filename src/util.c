@@ -994,6 +994,8 @@ boolean dir_open(struct mzx_dir *dir, const char *path)
   while(readdir(dir->d) != NULL)
     dir->entries++;
 
+// pspdev/devkitPSP historically does not have a rewinddir implementation.
+// libctru (3DS) has rewinddir but it doesn't work. FIXME reason for the Switch?
 #if defined(CONFIG_PSP) || defined(CONFIG_3DS) || defined(CONFIG_SWITCH)
   strncpy(dir->path, path, PATH_BUF_LEN);
   dir->path[PATH_BUF_LEN - 1] = 0;
@@ -1027,6 +1029,8 @@ void dir_seek(struct mzx_dir *dir, long offset)
 
   dir->pos = CLAMP(offset, 0L, dir->entries);
 
+// pspdev/devkitPSP historically does not have a rewinddir implementation.
+// libctru (3DS) has rewinddir but it doesn't work. FIXME reason for the Switch?
 #if defined(CONFIG_PSP) || defined(CONFIG_3DS) || defined(CONFIG_SWITCH)
   closedir(dir->d);
   dir->d = opendir(dir->path);
@@ -1040,7 +1044,7 @@ void dir_seek(struct mzx_dir *dir, long offset)
     readdir(dir->d);
 }
 
-boolean dir_get_next_entry(struct mzx_dir *dir, char *entry)
+boolean dir_get_next_entry(struct mzx_dir *dir, char *entry, int *type)
 {
   struct dirent *inode;
 
@@ -1054,6 +1058,24 @@ boolean dir_get_next_entry(struct mzx_dir *dir, char *entry)
   {
     entry[0] = 0;
     return false;
+  }
+
+  if(type)
+  {
+#ifdef DT_UNKNOWN
+    /* On platforms that support it, the d_type field can be used to avoid
+     * stat calls. This is critical for the file manager on embedded platforms.
+     */
+    if(inode->d_type == DT_REG)
+      *type = DIR_TYPE_FILE;
+    else
+    if(inode->d_type == DT_DIR)
+      *type = DIR_TYPE_DIR;
+    else
+      *type = DIR_TYPE_UNKNOWN;
+#else
+    *type = DIR_TYPE_UNKNOWN;
+#endif
   }
 
   snprintf(entry, PATH_BUF_LEN, "%s", inode->d_name);

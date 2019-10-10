@@ -203,6 +203,9 @@ __libspec int main(int argc, char *argv[])
 
   editor_init();
 
+  // Make sure we call this before loading configs.
+  init_player_input();
+
   // Figure out where all configuration files should be loaded
   // form. For game.cnf, et al this should eventually be wrt
   // the game directory, not the config.txt's path.

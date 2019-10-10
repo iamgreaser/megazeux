@@ -1,6 +1,8 @@
 #!/bin/bash
 PATH=$NDK_PATH:$PATH
 
+[ -z "$NDK_PATH" ] && { echo "NDK_PATH must be set! Aborting."; exit 1; }
+
 mkdir -p build/android
 if [ -d build/android/out ]; then
 	rm -r build/android/out
@@ -8,10 +10,9 @@ fi
 mkdir -p build/android/out
 
 for i in arm arm64 x86 x86_64; do
-	./config.sh --platform android --enable-release --disable-utils --disable-libpng \
-	  --prefix "$(realpath ./build/android/toolchain-$i/sysroot/usr)"
+	arch/android/CONFIG.ANDROID --prefix "$(realpath ./build/android/toolchain-$i/sysroot/usr)"
 	make -j1 clean
-	ARCH="$i" make
+	ARCH="$i" make -j8
 	cp "$1" build/android/out/"$1"-"$i".so
 done
 
@@ -29,7 +30,10 @@ cp build/android/out/"$1"-x86_64.so arch/android/project/app/jni/lib/x86_64/libm
 # ensure JNI libs will get refreshed
 rm -r arch/android/project/app/build
 
-ASSETS_ZIP=arch/android/project/app/src/main/res/raw/assets.zip
+ASSETS_DIR=arch/android/project/app/src/main/res/raw
+mkdir -p "$ASSETS_DIR"
+
+ASSETS_ZIP="$ASSETS_DIR/assets.zip"
 if [ -f "$ASSETS_ZIP" ]; then
 	rm "$ASSETS_ZIP"
 fi

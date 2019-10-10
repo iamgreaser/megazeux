@@ -198,7 +198,12 @@ static inline void load_vquick_fadeout(void)
   return;
 #endif
 
+#ifdef __EMSCRIPTEN__
+  // HACK: avoid putting load_world_*/load_savegame on the asyncify whitelist
+  insta_fadeout();
+#else
   vquick_fadeout();
+#endif
 }
 
 /**
@@ -871,6 +876,9 @@ static void title_resume(context *ctx)
     if(!load_world_title(title, curr_file))
     {
       conf->standalone_mode = false;
+
+      // Do this to avoid some UI fade bugs...
+      insta_fadein();
 
       if(title->load_dialog_on_failed_load)
       {
