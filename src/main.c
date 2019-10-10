@@ -43,6 +43,7 @@
 #include "game.h"
 #include "error.h"
 #include "idput.h"
+#include "player_input.h"
 #include "util.h"
 #include "world.h"
 #include "counter.h"
