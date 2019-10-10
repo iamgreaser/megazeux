@@ -187,12 +187,12 @@ These conditions will need to set PLAYEREVENTINDEX (TODO: This is probably not g
 
 These conditions default to player 0:
 
-- DELPRESSSED
+- DELPRESSED
 - DOWNPRESSED
-- LEFTPRESSSED
-- RIGHTPRESSSED
-- SPACEPRESSSED
-- UPPRESSSED
+- LEFTPRESSED
+- RIGHTPRESSED
+- SPACEPRESSED
+- UPPRESSED
 
 These labels will need to set PLAYEREVENTINDEX to either the player that caused them, or -1 if no player caused them:
 
