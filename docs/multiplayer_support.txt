@@ -148,35 +148,44 @@ or take matters into your own hands:
     if "playerdist" > 5 then "#return"
     set "playerindex" "playernearestindex"
     go SEEK for 1
-    set "playereventindex" to -1
+    set "playerindex" to -1
     goto "#return"
 
 Moving on...
 
-These counters are per-player, and should default to the nearest player (TODO: go with this? or use player 0? the former is more intuitive and harder to cheese, but the latter is probably going to be less wonky):
+There are several distance types for working out where the nearest player is. They are:
+
+- Manhattan: abs(dx) + abs(dy)
+- min-axis: min(abs(dx), abs(dy))
+- x-only: abs(dx)
+- y-only: abs(dy)
+
+Unless specified, the nearest player will be determined by Manhattan distance.
+
+These counters are per-player, and default to the nearest player (TODO: go with this? or use player 0? the former is more intuitive and harder to cheese, but the latter is probably going to be less wonky):
 
 - PLAYERFACEDIR
 - PLAYERLASTDIR
 - PLAYERX
 - PLAYERY
-- HORIZPLD
+- HORIZPLD (x-only)
 - PLAYERDIST
-- VERTPLD
+- VERTPLD (y-only)
 
 (TODO: Should the distance counters set PLAYEREVENTINDEX when read, or is that a little bit too unexpected? Either way, the default is probably going to be the nearest player as that's what makes the most sense --GM)
 
-These directions need some way of distinguishing between players:
+These directions default to the nearest player:
 
 - SEEK
 
 These conditions will need to set PLAYEREVENTINDEX (TODO: This is probably not going to be nice, perhaps this could be detected more intuitively --GM):
 
-- ALIGNED
-- ALIGNEDEW
-- ALIGNEDNS
-- TOUCHING [dir]
+- ALIGNED (min-axis)
+- ALIGNEDEW (y-only)
+- ALIGNEDNS (x-only)
+- TOUCHING [dir] (find any player)
 
-These conditions will probably default to player 0:
+These conditions default to player 0:
 
 - DELPRESSSED
 - DOWNPRESSED
@@ -199,21 +208,18 @@ These labels will need to set PLAYEREVENTINDEX to either the player that caused 
 
 Ideally, returning from the subroutine versions of these should reset PLAYEREVENTINDEX to what it was before.
 
-These commands need some way of distinguishing between players:
+These commands need some way of distinguishing between players (TODO: do we default to player 0, or the nearest player? I'm kinda torn on this one --GM):
 
-- EXCHANGE PLAYER POSITION
-- EXCHANGE PLAYER POSITION #
-- EXCHANGE PLAYER POSITION # DUPLICATE SELF
+- SAVE PLAYER POSITION
+- SAVE PLAYER POSITION #
+
+These commands default to the nearest player:
+
 - IF [dir] PLAYER [color] [thing] [param] "label"
 - PUT [color] [thing] [param] [dir] PLAYER
 - REL PLAYER
 - REL PLAYER FIRST
 - REL PLAYER LAST
-- RESTORE PLAYER POSITION
-- RESTORE PLAYER POSITION #
-- RESTORE PLAYER POSITION # DUPLICATE SELF
-- SAVE PLAYER POSITION
-- SAVE PLAYER POSITION #
 - SEND [dir] PLAYER "label"
 
 These commands merge all players regardless:
@@ -221,6 +227,13 @@ These commands merge all players regardless:
 - TELEPORT PLAYER "string" # #
 
 These commands default to merging all players:
+
+- EXCHANGE PLAYER POSITION
+- EXCHANGE PLAYER POSITION #
+- EXCHANGE PLAYER POSITION # DUPLICATE SELF
+- RESTORE PLAYER POSITION
+- RESTORE PLAYER POSITION #
+- RESTORE PLAYER POSITION # DUPLICATE SELF
 
 These commands default to merging all players UNLESS someone caused a touch or *shot action:
 
@@ -244,7 +257,7 @@ These commands default to affecting all players, but may be performed on a playe
 - PLAYER CHAR [char]
 - PLAYERCOLOR [color]
 
-These counters default to shared, but may be made per-player in a multiplayer-aware game:
+These counters default to shared, but may be made per-player in a multiplayer-aware game (to be implemented later):
 
 - AMMO
 - COINS
@@ -259,7 +272,7 @@ These counters default to shared, but may be made per-player in a multiplayer-aw
 
 Status counters (as set by STATUS COUNTER # "counter") are probably not going to have a per-player version - this would require overhauling how the ENTER menu works and in all seriousness you should actually be using a HUD considering they're not terribad to implement.
 
-These commands default to being shared, but may be made per-player in a multiplayer-aware game:
+These commands default to being shared, but may be made per-player in a multiplayer-aware game (to be implemented later):
 
 - BLIND #
 - ENDLIFE
@@ -318,5 +331,5 @@ TODO:
 
 - Per-player inputs.
 - Expose multiplayer counters.
-- Actual networked multiplayer support. config.sh will leave the networking code intact here if multiplayer is enabled, but it will not be used at this stage.
+- Actual networked multiplayer support. config.sh will leave the networking code intact here if multiplayer is enabled (UPDATE: this change was rolled back due to linking issues on non-modular builds --GM), but it will not be used at this stage.
 
