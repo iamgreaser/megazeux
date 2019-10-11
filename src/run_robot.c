@@ -30,6 +30,7 @@
 #include "core.h"
 #include "counter.h"
 #include "data.h"
+#include "distance.h"
 #include "error.h"
 #include "event.h"
 #include "expr.h"
@@ -145,6 +146,24 @@ static void calculate_blocked(struct world *mzx_world, int x, int y, int id,
       }
     }
   }
+}
+
+int get_player_id_near_robot(struct world *mzx_world,
+ struct robot *cur_robot, enum distance_type dist)
+{
+  int player_id = get_player_id_near_position(mzx_world,
+   cur_robot->xpos, cur_robot->ypos, dist);
+
+  return player_id;
+}
+
+struct player *get_player_near_robot(struct world *mzx_world,
+ struct robot *cur_robot, enum distance_type dist)
+{
+  int player_id = get_player_id_near_robot(mzx_world, cur_robot, dist);
+  struct player *player = &mzx_world->players[player_id];
+
+  return player;
 }
 
 // Turns a color (including those w/??) to a real color (0-255)
@@ -2010,9 +2029,8 @@ void run_robot(context *ctx, int id, int x, int y)
           {
             if(id)
             {
-              int player_id = get_player_id_near_position(
-               mzx_world, x, y, DISTANCE_MIN_AXIS);
-              struct player *player = &mzx_world->players[player_id];
+              struct player *player = get_player_near_robot(
+               mzx_world, cur_robot, DISTANCE_MIN_AXIS);
               if((player->x == x) || (player->y == y))
                 success = 1;
             }
@@ -2023,9 +2041,8 @@ void run_robot(context *ctx, int id, int x, int y)
           {
             if(id)
             {
-              int player_id = get_player_id_near_position(
-               mzx_world, x, y, DISTANCE_X_ONLY);
-              struct player *player = &mzx_world->players[player_id];
+              struct player *player = get_player_near_robot(
+               mzx_world, cur_robot, DISTANCE_X_ONLY);
               if(player->x == x)
                 success = 1;
             }
@@ -2036,9 +2053,8 @@ void run_robot(context *ctx, int id, int x, int y)
           {
             if(id)
             {
-              int player_id = get_player_id_near_position(
-               mzx_world, x, y, DISTANCE_Y_ONLY);
-              struct player *player = &mzx_world->players[player_id];
+              struct player *player = get_player_near_robot(
+               mzx_world, cur_robot, DISTANCE_Y_ONLY);
               if(player->y == y)
                 success = 1;
             }
@@ -3642,9 +3658,8 @@ void run_robot(context *ctx, int id, int x, int y)
 
       case ROBOTIC_CMD_SEND_DIR_PLAYER: // Send DIR of player "label"
       {
-        int player_id = get_player_id_near_position(
-         mzx_world, x, y, DISTANCE_MIN_AXIS);
-        struct player *player = &mzx_world->players[player_id];
+        struct player *player = get_player_near_robot(
+         mzx_world, cur_robot, DISTANCE_MANHATTAN);
         int send_x = player->x;
         int send_y = player->y;
         enum dir direction = parse_param_dir(mzx_world, cmd_ptr + 1);
@@ -3664,9 +3679,8 @@ void run_robot(context *ctx, int id, int x, int y)
 
       case ROBOTIC_CMD_PUT_DIR_PLAYER: // put thing dir of player
       {
-        int player_id = get_player_id_near_position(
-         mzx_world, x, y, DISTANCE_MIN_AXIS);
-        struct player *player = &mzx_world->players[player_id];
+        struct player *player = get_player_near_robot(
+         mzx_world, cur_robot, DISTANCE_MANHATTAN);
         int put_color = parse_param(mzx_world, cmd_ptr + 1, id);
         char *p2 = next_param_pos(cmd_ptr + 1);
         enum thing put_id = parse_param_thing(mzx_world, p2);

@@ -193,12 +193,9 @@ static int playerdist_read(struct world *mzx_world,
   struct robot *cur_robot = src_board->robot_list[id];
   struct player *player;
   int thisx, thisy;
-  int player_id;
 
   get_robot_position(cur_robot, &thisx, &thisy);
-  player_id = get_player_id_near_position(
-   mzx_world, thisx, thisy, DISTANCE_MANHATTAN);
-  player = &mzx_world->players[player_id];
+  player = get_player_near_robot(mzx_world, cur_robot, DISTANCE_MANHATTAN);
 
   return abs(player->x - thisx) + abs(player->y - thisy);
 }
@@ -326,28 +323,22 @@ static int playerx_read(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int id)
 {
   struct robot *cur_robot = mzx_world->current_board->robot_list[id];
-  int thisx, thisy;
-  int player_id;
+  struct player *player;
 
-  get_robot_position(cur_robot, &thisx, &thisy);
-  player_id = get_player_id_near_position(
-   mzx_world, thisx, thisy, DISTANCE_MANHATTAN);
+  player = get_player_near_robot(mzx_world, cur_robot, DISTANCE_MANHATTAN);
 
-  return mzx_world->players[player_id].x;
+  return player->x;
 }
 
 static int playery_read(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int id)
 {
   struct robot *cur_robot = mzx_world->current_board->robot_list[id];
-  int thisx, thisy;
-  int player_id;
+  struct player *player;
 
-  get_robot_position(cur_robot, &thisx, &thisy);
-  player_id = get_player_id_near_position(
-   mzx_world, thisx, thisy, DISTANCE_MANHATTAN);
+  player = get_player_near_robot(mzx_world, cur_robot, DISTANCE_MANHATTAN);
 
-  return mzx_world->players[player_id].y;
+  return player->y;
 }
 
 static int this_char_read(struct world *mzx_world,
@@ -457,28 +448,26 @@ static int horizpld_read(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int id)
 {
   struct robot *cur_robot = mzx_world->current_board->robot_list[id];
-  int player_id;
+  struct player *player;
   int thisx, thisy;
 
   get_robot_position(cur_robot, &thisx, &thisy);
-  player_id = get_player_id_near_position(
-   mzx_world, thisx, thisy, DISTANCE_X_ONLY);
+  player = get_player_near_robot(mzx_world, cur_robot, DISTANCE_X_ONLY);
 
-  return abs(mzx_world->players[player_id].x - thisx);
+  return abs(player->x - thisx);
 }
 
 static int vertpld_read(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int id)
 {
   struct robot *cur_robot = mzx_world->current_board->robot_list[id];
+  struct player *player;
   int thisx, thisy;
-  int player_id;
 
   get_robot_position(cur_robot, &thisx, &thisy);
-  player_id = get_player_id_near_position(
-   mzx_world, thisx, thisy, DISTANCE_Y_ONLY);
+  player = get_player_near_robot(mzx_world, cur_robot, DISTANCE_Y_ONLY);
 
-  return abs(mzx_world->players[player_id].y - thisy);
+  return abs(player->y - thisy);
 }
 
 static int board_char_read(struct world *mzx_world,

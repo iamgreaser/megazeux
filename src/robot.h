@@ -26,6 +26,8 @@ __M_BEGIN_DECLS
 
 #include "core.h"
 #include "data.h"
+#include "distance.h"
+#include "player_struct.h"
 #include "zip.h"
 
 // Let's not let a robot's stack get larger than 64k right now.
@@ -71,6 +73,11 @@ int command_num_to_program_pos(struct robot *cur_robot, int command_num);
 
 CORE_LIBSPEC void reallocate_robot(struct robot *robot, int size);
 CORE_LIBSPEC void clear_label_cache(struct robot *cur_robot);
+
+int get_player_id_near_robot(struct world *mzx_world,
+ struct robot *cur_robot, enum distance_type dist);
+struct player *get_player_near_robot(struct world *mzx_world,
+ struct robot *cur_robot, enum distance_type dist);
 
 void change_robot_name(struct board *src_board, struct robot *cur_robot,
  char *new_name);
