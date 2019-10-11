@@ -151,8 +151,17 @@ static void calculate_blocked(struct world *mzx_world, int x, int y, int id,
 int get_player_id_near_robot(struct world *mzx_world,
  struct robot *cur_robot, enum distance_type dist)
 {
-  int player_id = get_player_id_near_position(mzx_world,
-   cur_robot->xpos, cur_robot->ypos, dist);
+  int player_id;
+
+  if(cur_robot->playerindex >= 0 && cur_robot->playerindex < NUM_PLAYERS)
+  {
+    player_id = cur_robot->playerindex;
+  }
+  else
+  {
+    player_id = get_player_id_near_position(mzx_world,
+     cur_robot->xpos, cur_robot->ypos, dist);
+  }
 
   return player_id;
 }
