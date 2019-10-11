@@ -349,8 +349,17 @@ int place_player_xy(
       step_sensor(mzx_world, dparam);
     }
 
-    id_remove_top(mzx_world, player->x, player->y);
-    id_place(mzx_world, x, y, PLAYER, 0, 0);
+    // Only remove the player if we aren't about to separate.
+    if(*player_id == 0 || player->separated)
+    {
+      id_remove_top(mzx_world, player->x, player->y);
+    }
+    else
+    {
+      player->separated = true;
+    }
+
+    id_place(mzx_world, x, y, PLAYER, 0, *player_id);
     player->x = x;
     player->y = y;
 
