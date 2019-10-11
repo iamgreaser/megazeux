@@ -616,8 +616,8 @@ enum board_prop {
 #define COUNT_ROBOT_PROPS (              1 + 3 + 1)
 #define BOUND_ROBOT_PROPS (ROBOT_NAME_SIZE + 5 + 0) // +prog OR source
 
-#define COUNT_ROBOT_SAVE_PROPS (11 + 2 +    1 + 1 + 1)
-#define BOUND_ROBOT_SAVE_PROPS (17 + 8 + 4*32 + 0 + 1) // +stack
+#define COUNT_ROBOT_SAVE_PROPS (11 + 2 +    1 + 1 + 2)
+#define BOUND_ROBOT_SAVE_PROPS (17 + 8 + 4*32 + 0 + 2) // +stack
 
 // For world files, use ROBOT_PROPS_SIZE
 // For save files, use ROBOT_PROPS_SIZE + ROBOT_SAVE_PROPS_SIZE
@@ -670,6 +670,7 @@ enum robot_prop {
 
   // New
   RPROP_CAN_GOOPWALK              = 0x0120, // 1
+  RPROP_PLAYERINDEX               = 0x0121, // 1
 };
 
 

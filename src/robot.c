@@ -78,6 +78,7 @@ void create_blank_robot(struct robot *cur_robot)
   cur_robot->is_locked = 0;
   cur_robot->can_lavawalk = 0;
   cur_robot->can_goopwalk = 0;
+  cur_robot->playerindex = -1;
   cur_robot->walk_dir = 0;
   cur_robot->last_touch_dir = 0;
   cur_robot->last_shot_dir = 0;
@@ -235,6 +236,14 @@ static int load_robot_from_memory(struct world *mzx_world, struct robot *cur_rob
       // New
       case RPROP_CAN_GOOPWALK:
         cur_robot->can_goopwalk = load_prop_int(size, &prop);
+        break;
+
+      case RPROP_PLAYERINDEX:
+        cur_robot->playerindex = load_prop_int(size, &prop);
+        if(cur_robot->playerindex >= NUM_PLAYERS)
+        {
+          cur_robot->playerindex = -1;
+        }
         break;
 
       // Source/bytecode are slated for separation from these files.
@@ -694,6 +703,7 @@ static void save_robot_to_memory(struct robot *cur_robot,
       mfputd(cur_robot->stack[i], &prop);
 
     save_prop_c(RPROP_CAN_GOOPWALK, cur_robot->can_goopwalk, mf);
+    save_prop_c(RPROP_PLAYERINDEX, cur_robot->playerindex, mf);
   }
 
   save_prop_eof(mf);

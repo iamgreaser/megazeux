@@ -2149,6 +2149,31 @@ static void goop_walk_write(struct world *mzx_world,
   (mzx_world->current_board->robot_list[id])->can_goopwalk = value;
 }
 
+static int playercount_read(struct world *mzx_world,
+ const struct function_counter *counter, const char *name, int id)
+{
+  return NUM_PLAYERS;
+}
+
+static int playerindex_read(struct world *mzx_world,
+ const struct function_counter *counter, const char *name, int id)
+{
+  return (mzx_world->current_board->robot_list[id])->playerindex;
+}
+
+static void playerindex_write(struct world *mzx_world,
+ const struct function_counter *counter, const char *name, int value, int id)
+{
+  int player_id = value;
+
+  if(player_id < 0 || player_id > NUM_PLAYERS)
+  {
+    player_id = -1;
+  }
+
+  (mzx_world->current_board->robot_list[id])->playerindex = player_id;
+}
+
 static int robot_id_read(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int id)
 {
@@ -2668,8 +2693,10 @@ static const struct function_counter builtin_counters[] =
   { "overlay_color",    V260,   overlay_color_read,   NULL },
   { "overlay_mode",     V260,   overlay_mode_read,    NULL },
   { "pixel",            V260,   pixel_read,           pixel_write },
+  { "playercount",      VGIT,   playercount_read,     NULL },
   { "playerdist",       V100,   playerdist_read,      NULL },
   { "playerfacedir",    V200,   playerfacedir_read,   playerfacedir_write },
+  { "playerindex",      VGIT,   playerindex_read,     playerindex_write },
   { "playerlastdir",    V200,   playerlastdir_read,   playerlastdir_write },
   { "playerx",          V251s1, playerx_read,         NULL },
   { "playery",          V251s1, playery_read,         NULL },

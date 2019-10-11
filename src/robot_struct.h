@@ -114,6 +114,7 @@ struct robot
 
   // Local counters - store in save file
   int local[32];
+  int playerindex;
 
 #ifdef CONFIG_EDITOR
   // A mapping of bytecode lines to source lines.
