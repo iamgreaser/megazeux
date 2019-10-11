@@ -289,12 +289,10 @@ void calculate_xytop(struct world *mzx_world, int *x, int *y)
 
 // Return the seek dir relative to the player.
 
-int find_seek(struct world *mzx_world, int x, int y)
+int find_seek_for_player(struct world *mzx_world,
+ int x, int y, struct player *player)
 {
   int dir;
-  int player_id = get_player_id_near_position(
-   mzx_world, x, y, DISTANCE_MANHATTAN);
-  struct player *player = &mzx_world->players[player_id];
 
   if(y == player->y)
   {
@@ -334,6 +332,15 @@ int find_seek(struct world *mzx_world, int x, int y)
       return 2;
     }
   }
+}
+
+int find_seek(struct world *mzx_world, int x, int y)
+{
+  int player_id = get_player_id_near_position(
+   mzx_world, x, y, DISTANCE_MANHATTAN);
+  struct player *player = &mzx_world->players[player_id];
+
+  return find_seek_for_player(mzx_world, x, y, player);
 }
 
 int flip_dir(int dir)
@@ -1252,9 +1259,11 @@ enum move_status move(struct world *mzx_world, int x, int y, int dir,
   return NO_HIT;
 }
 
-enum dir parsedir(struct world *mzx_world, enum dir old_dir, int x, int y,
+enum dir parsedir(struct world *mzx_world, struct robot *cur_robot,
+ enum dir old_dir, int x, int y,
  enum dir flow_dir, int bln, int bls, int ble, int blw)
 {
+  struct player *player;
   int n_dir = (int)old_dir & 0x0F;
 
   switch(n_dir)
@@ -1314,7 +1323,9 @@ enum dir parsedir(struct world *mzx_world, enum dir old_dir, int x, int y,
     }
 
     case SEEK:
-      n_dir = find_seek(mzx_world, x, y);
+      player = get_player_near_robot(
+       mzx_world, cur_robot, DISTANCE_MANHATTAN);
+      n_dir = find_seek_for_player(mzx_world, x, y, player);
       break;
 
     case RANDANY:

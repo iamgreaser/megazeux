@@ -34,6 +34,8 @@ void rotate(struct world *mzx_world, int x, int y, int dir);
 void calculate_xytop(struct world *mzx_world, int *x, int *y);
 
 int flip_dir(int dir);
+int find_seek_for_player(struct world *mzx_world,
+ int x, int y, struct player *player);
 int find_seek(struct world *mzx_world, int x, int y);
 
 int transport(struct world *mzx_world, int x, int y, int dir, enum thing id,
@@ -49,7 +51,8 @@ void shoot_lazer(struct world *mzx_world, int x, int y, int dir, int length,
 
 enum move_status move(struct world *mzx_world, int x, int y, int dir,
  int flags);
-enum dir parsedir(struct world *mzx_world, enum dir old_dir, int x, int y,
+enum dir parsedir(struct world *mzx_world, struct robot *cur_robot,
+ enum dir old_dir, int x, int y,
  enum dir flow_dir, int bln, int bls, int ble, int blw);
 
 // Function to take an x/y position and return an array offset
