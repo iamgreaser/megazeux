@@ -779,12 +779,13 @@ void update_world(context *ctx, boolean is_title)
        !player->was_on_entrance &&
        !mzx_world->was_zapped)
       {
+        int primary_player_id = -1;
         struct player *primary_player = &mzx_world->players[0];
 
         // Pushed onto an entrance
         // There's often a pushed sound in this case, so clear the current SFX
         sfx_clear_queue();
-        place_player_xy(mzx_world, player->x, player->y);
+        place_player_xy(mzx_world, player->x, player->y, &primary_player_id);
         entrance(mzx_world, primary_player->x, primary_player->y);
 
         // We took an entrance here, so bail
@@ -1176,6 +1177,7 @@ boolean update_resolve_target(struct world *mzx_world,
     {
       int target_x = mzx_world->target_x;
       int target_y = mzx_world->target_y;
+      int primary_player_id = 0;
 
       // Specified x/y
       if(target_x < 0)
@@ -1191,7 +1193,7 @@ boolean update_resolve_target(struct world *mzx_world,
         target_y = board_height - 1;
 
       find_player(mzx_world);
-      place_player_xy(mzx_world, target_x, target_y);
+      place_player_xy(mzx_world, target_x, target_y, &primary_player_id);
     }
 
     send_robot_def(mzx_world, 0, LABEL_JUSTENTERED);

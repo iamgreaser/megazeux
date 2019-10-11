@@ -309,11 +309,21 @@ static int place_dir_xy(struct world *mzx_world, enum thing id, int color,
   }
 }
 
-int place_player_xy(struct world *mzx_world, int x, int y)
+int place_player_xy(
+ struct world *mzx_world, int x, int y, int *player_id)
 {
-  struct player *player = &mzx_world->players[0];
+  struct player *player;
 
-  merge_all_players(mzx_world);
+  if(*player_id >= 0 && *player_id < NUM_PLAYERS)
+  {
+    player = &mzx_world->players[*player_id];
+  }
+  else
+  {
+    *player_id = 0;
+    player = &mzx_world->players[0];
+    merge_all_players(mzx_world);
+  }
 
   if((player->x != x) || (player->y != y))
   {
@@ -1335,9 +1345,11 @@ void run_robot(context *ctx, int id, int x, int y)
       {
         if(id)
         {
+          int player_id = cur_robot->playerindex;
+
           clear_robot_id(src_board, id);
           id_remove_top(mzx_world, x, y);
-          place_player_xy(mzx_world, x, y);
+          place_player_xy(mzx_world, x, y, &player_id);
         }
         // Robot no longer exists; exit.
         return;
@@ -2910,13 +2922,14 @@ void run_robot(context *ctx, int id, int x, int y)
         int put_x = parse_param(mzx_world, cmd_ptr + 1, id);
         char *p2 = next_param_pos(cmd_ptr + 1);
         int put_y = parse_param(mzx_world, p2, id);
+        int player_id = cur_robot->playerindex;
 
         prefix_mid_xy(mzx_world, &put_x, &put_y, x, y);
 
-        if(place_player_xy(mzx_world, put_x, put_y))
+        if(place_player_xy(mzx_world, put_x, put_y, &player_id))
         {
           // Players should have merged in place_player_xy
-          struct player *player = &mzx_world->players[0];
+          struct player *player = &mzx_world->players[player_id];
 
           done = 1;
 
@@ -2960,12 +2973,14 @@ void run_robot(context *ctx, int id, int x, int y)
         {
           int put_x = x;
           int put_y = y;
+          int player_id = cur_robot->playerindex;
+
           if(!move_dir(src_board, &put_x, &put_y, put_dir))
           {
-            if(place_player_xy(mzx_world, put_x, put_y))
+            if(place_player_xy(mzx_world, put_x, put_y, &player_id))
             {
               // Players should have merged in place_player_xy
-              struct player *player = &mzx_world->players[0];
+              struct player *player = &mzx_world->players[player_id];
 
               if((player->x == x) && (player->y == y))
               {
