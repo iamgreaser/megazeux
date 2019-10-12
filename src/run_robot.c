@@ -153,7 +153,9 @@ int get_player_id_near_robot(struct world *mzx_world,
 {
   int player_id;
 
-  if(cur_robot->playerindex >= 0 && cur_robot->playerindex < NUM_PLAYERS)
+  if(mzx_world->version >= VGIT
+   && cur_robot->playerindex >= 0
+   && cur_robot->playerindex < NUM_PLAYERS)
   {
     player_id = cur_robot->playerindex;
   }
@@ -314,7 +316,9 @@ int place_player_xy(
 {
   struct player *player;
 
-  if(*player_id >= 0 && *player_id < NUM_PLAYERS)
+  if(mzx_world->version >= VGIT
+   && *player_id >= 0
+   && *player_id < NUM_PLAYERS)
   {
     player = &mzx_world->players[*player_id];
   }
