@@ -304,6 +304,7 @@ static const char *robot_var_list[] =
   "this_char*",
   "this_color*",
   "playerindex",
+  "playerevent",
   "playerdist*",
   "horizpld*",
   "vertpld*",
