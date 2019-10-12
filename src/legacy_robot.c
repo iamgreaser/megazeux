@@ -70,6 +70,7 @@ void legacy_load_robot_from_memory(struct world *mzx_world,
   cur_robot->program_bytecode = NULL;
   cur_robot->program_source = NULL;
   cur_robot->num_labels = 0;
+  cur_robot->playerindex = -1;
 
   program_length = mem_getw(&bufferPtr);
   bufferPtr += 2;
