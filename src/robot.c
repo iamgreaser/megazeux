@@ -79,6 +79,7 @@ void create_blank_robot(struct robot *cur_robot)
   cur_robot->can_lavawalk = 0;
   cur_robot->can_goopwalk = 0;
   cur_robot->playerindex = -1;
+  cur_robot->playerevent = -1;
   cur_robot->walk_dir = 0;
   cur_robot->last_touch_dir = 0;
   cur_robot->last_shot_dir = 0;
