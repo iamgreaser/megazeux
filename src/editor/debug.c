@@ -258,6 +258,7 @@ static const char *world_var_list[] =
   "mod_position",
   "multiplier",
   "mzx_speed",
+  "playercount*",
   "smzx_message",
   "smzx_mode*",
   "spacelock", //no read
@@ -302,6 +303,7 @@ static const char *robot_var_list[] =
   "thisy*",
   "this_char*",
   "this_color*",
+  "playerindex",
   "playerdist*",
   "horizpld*",
   "vertpld*",
