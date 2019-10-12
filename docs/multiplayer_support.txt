@@ -91,25 +91,25 @@ Some notes:
 
 ----------------------------------------------------------------------------
 
-[UNIMPLEMENTED] Robotic changes
+[WIP] Robotic changes
 
 NOTE: Not all of this will be implemented in the first release of multiplayer.
-Also a lot of this is a draft that will most likely be awful in places if it were to be implemented, especially when it comes to PLAYEREVENTINDEX.
+Also a lot of this is a draft that will most likely be awful in places if it were to be implemented, especially when it comes to PLAYEREVENT.
 
 There needs to be a way to handle specific players from the Robotic side.
 
 - There will be a couple of counters per robot allowing one to target a specific player.
-  - PLAYERINDEX: Defaults to -1. Set this to a non-negative integer to target a specific player.
-  - PLAYEREVENTINDEX: Defaults to -1. Automatically gets set to a given player based on certain actions and events.
+  * [x] PLAYERINDEX: Defaults to -1. Set this to a non-negative integer to target a specific player.
+  * [x] PLAYEREVENT: Defaults to -1. Automatically gets set to a given player based on certain actions and events.
     - When PLAYERINDEX is -1, it falls back on this under all circumstances.
-    - However, when PLAYERINDEX is not -1, it overrides PLAYEREVENTINDEX.
-  - The above names are tentative, especially the PLAYEREVENTINDEX one, and honestly all the new counter names here will be tentative.
+    - However, when PLAYERINDEX is not -1, it overrides PLAYEREVENT.
+  - The above names are tentative, especially the PLAYEREVENT one, and honestly all the new counter names here will be tentative.
 
 - The following special counters will also be provided:
-  - PLAYERNEARESTINDEX (read-only): Indicates the index of the player nearest to this robot.
+  * [ ] PLAYERNEAREST (read-only): Indicates the index of the player nearest to this robot.
 
 - The following global counters will also be provided:
-  - PLAYERCOUNT (read-only?): Indicates the number of players in this game.
+  * [x] PLAYERCOUNT (read-only?): Indicates the number of players in this game.
 
 The rationale for using index counters rather than direct access is because it's quite likely that one would use a loop:
 
@@ -162,122 +162,132 @@ There are several distance types for working out where the nearest player is. Th
 
 Unless specified, the nearest player will be determined by Manhattan distance.
 
-These counters are per-player, and default to the nearest player (TODO: go with this? or use player 0? the former is more intuitive and harder to cheese, but the latter is probably going to be less wonky):
+These counters are per-player, and default to the nearest player (NOTE: these are probably all sorted aside from PLAYERFACEDIR and PLAYERLASTDIR, but I need to check them all, and PLAYERLASTDIR appears to be tied to the board so that one's going to be a pain --GM):
 
-- PLAYERFACEDIR
-- PLAYERLASTDIR
-- PLAYERX
-- PLAYERY
-- HORIZPLD (x-only)
-- PLAYERDIST
-- VERTPLD (y-only)
+* [ ] PLAYERFACEDIR
+* [ ] PLAYERLASTDIR
+* [ ] PLAYERX
+* [ ] PLAYERY
+* [x] HORIZPLD (x-only)
+* [ ] PLAYERDIST
+* [x] VERTPLD (y-only)
 
-(TODO: Should the distance counters set PLAYEREVENTINDEX when read, or is that a little bit too unexpected? Either way, the default is probably going to be the nearest player as that's what makes the most sense --GM)
+(TODO: Should the distance counters set PLAYEREVENT when read, or is that a little bit too unexpected? Either way, the default is probably going to be the nearest player as that's what makes the most sense --GM)
 
 These directions default to the nearest player:
 
-- SEEK
+* [x] SEEK
 
-These conditions will need to set PLAYEREVENTINDEX (TODO: This is probably not going to be nice, perhaps this could be detected more intuitively --GM):
+These conditions will need to set PLAYEREVENT (TODO: This is probably not going to be nice, perhaps this could be detected more intuitively --GM):
 
-- ALIGNED (min-axis)
-- ALIGNEDEW (y-only)
-- ALIGNEDNS (x-only)
-- TOUCHING [dir] (find any player)
+* [ ] ALIGNED (min-axis)
+* [ ] ALIGNEDEW (y-only)
+* [ ] ALIGNEDNS (x-only)
+* [ ] TOUCHING [dir] (find any player)
 
 These conditions default to player 0:
 
-- DELPRESSED
-- DOWNPRESSED
-- LEFTPRESSED
-- RIGHTPRESSED
-- SPACEPRESSED
-- UPPRESSED
+* [ ] DELPRESSED
+* [ ] DOWNPRESSED
+* [ ] LEFTPRESSED
+* [ ] RIGHTPRESSED
+* [ ] SPACEPRESSED
+* [ ] UPPRESSED
 
-These labels will need to set PLAYEREVENTINDEX to either the player that caused them, or -1 if no player caused them:
+These labels will need to set PLAYEREVENT to either the player that caused them, or -1 if no player caused them:
+(TODO: Some of these are difficult to detect, BOMBED and *SHOT especially.)
 
-- BOMBED [#]
-- GOOPTOUCHED [#]
-- INVINCO [#]
-- PLAYERHIT [#]
-- PLAYERHURT [#]
-- PLAYERSHOT [#]
-- SENSORON
-- SHOT [#]
-- TOUCH [#]
+* [ ] BOMBED [#]
+* [ ] GOOPTOUCHED [#]
+* [ ] INVINCO [#]
+* [ ] PLAYERHIT [#]
+* [ ] PLAYERHURT [#]
+* [ ] PLAYERSHOT [#]
+* [ ] SENSORON
+* [ ] SHOT [#]
+* [x] TOUCH [#]
 
-Ideally, returning from the subroutine versions of these should reset PLAYEREVENTINDEX to what it was before.
+Ideally, returning from the subroutine versions of these should reset PLAYEREVENT to what it was before.
 
 These commands need some way of distinguishing between players (TODO: do we default to player 0, or the nearest player? I'm kinda torn on this one --GM):
 
-- SAVE PLAYER POSITION
-- SAVE PLAYER POSITION #
+* [ ] SAVE PLAYER POSITION
+* [ ] SAVE PLAYER POSITION #
 
 These commands default to the nearest player:
 
-- IF [dir] PLAYER [color] [thing] [param] "label"
-- PUT [color] [thing] [param] [dir] PLAYER
-- REL PLAYER
-- REL PLAYER FIRST
-- REL PLAYER LAST
-- SEND [dir] PLAYER "label"
+* [ ] IF [dir] PLAYER [color] [thing] [param] "label"
+* [ ] PUT [color] [thing] [param] [dir] PLAYER
+* [ ] REL PLAYER
+* [ ] REL PLAYER FIRST
+* [ ] REL PLAYER LAST
+* [ ] SEND [dir] PLAYER "label"
 
 These commands merge all players regardless:
 
-- TELEPORT PLAYER "string" # #
+* [ ] TELEPORT PLAYER "string" # #
 
 These commands default to merging all players:
 
-- EXCHANGE PLAYER POSITION
-- EXCHANGE PLAYER POSITION #
-- EXCHANGE PLAYER POSITION # DUPLICATE SELF
-- RESTORE PLAYER POSITION
-- RESTORE PLAYER POSITION #
-- RESTORE PLAYER POSITION # DUPLICATE SELF
+* [ ] EXCHANGE PLAYER POSITION
+* [ ] EXCHANGE PLAYER POSITION #
+* [ ] EXCHANGE PLAYER POSITION # DUPLICATE SELF
+* [ ] RESTORE PLAYER POSITION
+* [ ] RESTORE PLAYER POSITION #
+* [ ] RESTORE PLAYER POSITION # DUPLICATE SELF
 
 These commands default to merging all players UNLESS someone caused a touch or *shot action:
+(TODO: do we check the actions for all of these? DIE ITEM definitely, but PUT PLAYER may be iffy.)
 
-- DIE ITEM
-- PUT PLAYER # #
-- PUT PLAYER [dir]
+* [x] DIE ITEM
+* [ ] PUT PLAYER # #
+* [ ] PUT PLAYER [dir]
 
 These commands default to affecting all players, but may be performed on a player-by-player basis:
 
-- LOCKPLAYER
-- LOCKPLAYER ATTACK
-- LOCKPLAYER EW
-- LOCKPLAYER NS
-- UNLOCKPLAYER
-- PLAYER BULLETCOLOR [color]
-- PLAYER BULLETE [char]
-- PLAYER BULLETN [char]
-- PLAYER BULLETS [char]
-- PLAYER BULLETW [char]
-- PLAYER CHAR [dir] [char]
-- PLAYER CHAR [char]
-- PLAYERCOLOR [color]
+* [ ] LOCKPLAYER
+* [ ] LOCKPLAYER ATTACK
+* [ ] LOCKPLAYER EW
+* [ ] LOCKPLAYER NS
+* [ ] MOVE PLAYER [dir] (TODO: this doesn't separate merged players when selected individually yet)
+* [ ] MOVE PLAYER [dir] [label] (TODO: see MOVE PLAYER [dir])
+* [ ] UNLOCKPLAYER
+* [ ] PLAYER BULLETCOLOR [color]
+* [ ] PLAYER BULLETE [char]
+* [ ] PLAYER BULLETN [char]
+* [ ] PLAYER BULLETS [char]
+* [ ] PLAYER BULLETW [char]
+* [ ] PLAYER CHAR [dir] [char]
+* [ ] PLAYER CHAR [char]
+* [ ] PLAYERCOLOR [color]
 
-These counters default to shared, but may be made per-player in a multiplayer-aware game (to be implemented later):
+----------------------------------------------------------------------------
 
-- AMMO
-- COINS
-- GEMS
-- HEALTH
-- HIBOMBS
-- INVINCO
-- LOBOMBS
-- LIVES
-- SCORE
-- SPACELOCK
+[UNIMPLEMENTED] Split player stats support
+
+So far these seem to be "really nice to have", but not worth it for a first release for multiplayer, so they've been split up into their own section.
+
+These counters default to shared, but may be made per-player in a multiplayer-aware game:
+
+* [ ] AMMO
+* [ ] COINS
+* [ ] GEMS
+* [ ] HEALTH
+* [ ] HIBOMBS
+* [ ] INVINCO
+* [ ] LOBOMBS
+* [ ] LIVES
+* [ ] SCORE
+* [ ] SPACELOCK
 
 Status counters (as set by STATUS COUNTER # "counter") are probably not going to have a per-player version - this would require overhauling how the ENTER menu works and in all seriousness you should actually be using a HUD considering they're not terribad to implement.
 
-These commands default to being shared, but may be made per-player in a multiplayer-aware game (to be implemented later):
+These commands default to being shared, but may be made per-player in a multiplayer-aware game:
 
-- BLIND #
-- ENDLIFE
-- FIREWALKER #
-- WIND #
+* [ ] BLIND #
+* [ ] ENDLIFE
+* [ ] FIREWALKER #
+* [ ] WIND #
 
 The AVALANCHE command is a board-wide effect. It makes no sense to make this per-player.
 The FREEZETIME and SLOWTIME commands are likely to be too much of a pain to do on a per-player basis.
@@ -285,6 +295,8 @@ The FREEZETIME and SLOWTIME commands are likely to be too much of a pain to do o
 ----------------------------------------------------------------------------
 
 [UNIMPLEMENTED] Viewports and split screen
+
+After some brief sound effects and stuff along the lines of "you don't want to know", this is not going to be implemented as part of the first release of multiplayer. Once again, "really nice to have", but having had a look into it myself I know we're going to need to refactor and/or restructure things for this to work --GM
 
 Some ideas for multiplayer-unaware games:
 
@@ -310,6 +322,8 @@ Some ideas for multiplayer-aware games:
 ----------------------------------------------------------------------------
 
 [UNIMPLEMENTED] Networked multiplayer
+
+Not going into the first release of multiplayer, but probably the easiest of the things that aren't going into the first release... assuming we've done a good job of crushing nondeterminism --GM
 
 The main idea for this is as follows:
 
