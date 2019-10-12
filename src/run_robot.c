@@ -1360,6 +1360,11 @@ void run_robot(context *ctx, int id, int x, int y)
         {
           int player_id = cur_robot->playerindex;
 
+          if(player_id < 0 || player_id >= NUM_PLAYERS)
+          {
+            player_id = cur_robot->playerevent;
+          }
+
           clear_robot_id(src_board, id);
           id_remove_top(mzx_world, x, y);
           place_player_xy(mzx_world, x, y, &player_id);
