@@ -246,6 +246,14 @@ static int load_robot_from_memory(struct world *mzx_world, struct robot *cur_rob
         }
         break;
 
+      case RPROP_PLAYEREVENT:
+        cur_robot->playerevent = load_prop_int(size, &prop);
+        if(cur_robot->playerevent == 0xFF)
+        {
+          cur_robot->playerevent = -1;
+        }
+        break;
+
       // Source/bytecode are slated for separation from these files.
       // When that happens, it might also be good to merge all robots into
       // one file per board.
@@ -704,6 +712,7 @@ static void save_robot_to_memory(struct robot *cur_robot,
 
     save_prop_c(RPROP_CAN_GOOPWALK, cur_robot->can_goopwalk, mf);
     save_prop_c(RPROP_PLAYERINDEX, cur_robot->playerindex, mf);
+    save_prop_c(RPROP_PLAYEREVENT, cur_robot->playerevent, mf);
   }
 
   save_prop_eof(mf);

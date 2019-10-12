@@ -1014,6 +1014,8 @@ void grab_item_for_player(struct world *mzx_world, int player_id,
       cur_board->robot_list[idx]->last_touch_dir =
        int_to_dir(flip_dir(src_dir));
 
+      cur_board->robot_list[idx]->playerevent = player_id;
+
       send_robot_def(mzx_world, param, LABEL_TOUCH);
       break;
     }
