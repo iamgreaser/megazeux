@@ -2155,7 +2155,7 @@ static void playerindex_write(struct world *mzx_world,
 {
   int player_id = value;
 
-  if(player_id < 0 || player_id > NUM_PLAYERS)
+  if(player_id < 0 || player_id >= 0xFF)
   {
     player_id = -1;
   }

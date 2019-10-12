@@ -240,7 +240,7 @@ static int load_robot_from_memory(struct world *mzx_world, struct robot *cur_rob
 
       case RPROP_PLAYERINDEX:
         cur_robot->playerindex = load_prop_int(size, &prop);
-        if(cur_robot->playerindex >= NUM_PLAYERS)
+        if(cur_robot->playerindex == 0xFF)
         {
           cur_robot->playerindex = -1;
         }
