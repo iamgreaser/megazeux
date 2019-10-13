@@ -162,6 +162,9 @@ There are several distance types for working out where the nearest player is. Th
 
 Unless specified, the nearest player will be determined by Manhattan distance.
 
+When moving player 0 specifically, all merged players move along with player 0.
+When moving a specific player other than player 0, if said player is merged, it will split off if it is possible to move.
+
 These counters are per-player, and default to the nearest player (NOTE: these are probably all sorted aside from PLAYERFACEDIR and PLAYERLASTDIR, but I need to check them all, and PLAYERLASTDIR appears to be tied to the board so that one's going to be a pain --GM):
 
 * [ ] PLAYERFACEDIR

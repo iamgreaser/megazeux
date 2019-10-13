@@ -2885,9 +2885,33 @@ void run_robot(context *ctx, int id, int x, int y)
           if(!program[cur_robot->cur_prog_line])
             cur_robot->cur_prog_line = 0;
 
-          // Move player
+          // Move player(s)
+          if(cur_robot->playerindex >= 0
+           && cur_robot->playerindex < NUM_PLAYERS
+           && mzx_world->version >= VGIT)
+          {
+            // Move our one player
+            struct player *player = &mzx_world->players[
+             cur_robot->playerindex];
+            int old_x = player->x;
+            int old_y = player->y;
+            int old_board = mzx_world->current_board_id;
+            enum board_target old_target = mzx_world->target_where;
+            int dir = dir_to_int(direction);
 
-          if(cmd == ROBOTIC_CMD_MOVE_PLAYER_DIR_OR)
+            move_one_player(mzx_world, cur_robot->playerindex, dir);
+
+            if((player->x == old_x) && (player->y == old_y) &&
+             (mzx_world->current_board_id == old_board) &&
+             (mzx_world->target_where == old_target))
+            {
+              // Jump to our label.
+              char *p2 = next_param_pos(cmd_ptr + 1);
+              gotoed = send_self_label_tr(mzx_world,  p2 + 1, id);
+              break;
+            }
+          }
+          else if(cmd == ROBOTIC_CMD_MOVE_PLAYER_DIR_OR)
           {
             // For multiplayer we need to see if ANY player has moved.
             boolean did_move = false;
