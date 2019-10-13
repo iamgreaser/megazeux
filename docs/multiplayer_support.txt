@@ -24,9 +24,7 @@ However, once the other players start to move, we get to cover the concepts of s
 - Certain actions will merge all players with player 0, these are:
   - Moving to a different board
   - Dying where "restart on board" is set
-  - Teleporting to a specific position (TODO: Ensure that this is the case)
-  - Some actions which are undesireable, but require further code to make these not cause a full merge:
-    - Doing a "die item"
+  - Teleporting to a specific position
 
 ----------------------------------------------------------------------------
 
