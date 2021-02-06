@@ -94,12 +94,13 @@ __libspec int main(int argc, char *argv[])
 #endif // __APPLE__
 
   // argc may be 0 on e.g. some Wii homebrew loaders.
-  if(argc == 0)
+  if(argc == 0 || 1)
   {
     argv = _backup_argv;
     argc = 1;
   }
 
+  // FIXME: TEMPORARILY DISABLED FOR PSX --GM
   if(mzx_res_init(argv[0], is_editor()))
     goto err_free_res;
 
@@ -116,6 +117,7 @@ __libspec int main(int argc, char *argv[])
   chdir(config_dir);
 
   default_config(&mzx_world.conf);
+  // FIXME: TEMPORARILY DISABLED FOR PSX --GM
   set_config_from_file_startup(&mzx_world.conf, mzx_res_get_by_id(CONFIG_TXT));
   set_config_from_command_line(&mzx_world.conf, &argc, argv);
 

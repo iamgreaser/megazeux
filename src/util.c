@@ -52,8 +52,13 @@ struct mzx_resource
  * enum resource_id enumeration defines them.
  */
 static struct mzx_resource mzx_res[] = {
+#ifdef CONFIG_PSX
+#define ASSETS "a/"
+  { CONFFILE,                      NULL, true },
+#else
 #define ASSETS "assets/"
   { CONFFILE,                      NULL, false },
+#endif
   { ASSETS "default.chr",          NULL, false },
   { ASSETS "edit.chr",             NULL, false },
   { ASSETS "smzx.pal",             NULL, false },

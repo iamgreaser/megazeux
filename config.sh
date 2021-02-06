@@ -23,6 +23,7 @@ usage() {
 	echo "  unix-devel     As above, but for running from current dir"
 	echo "  darwin         Macintosh OS X (not Classic)"
 	echo "  psp            Experimental PSP port"
+	echo "  psx            Experimental PlayStation 1 port"
 	echo "  gp2x           Experimental GP2X port"
 	echo "  nds            Experimental NDS port"
 	echo "  3ds            Experimental 3DS port"
@@ -497,6 +498,11 @@ if [ "$PLATFORM" = "pandora" ]; then
 	echo "BUILD_PANDORA=1" >> platform.inc
 fi
 
+if [ "$PLATFORM" = "psx" ]; then
+	echo "Disabling SDL (PSX)."
+	SDL="false"
+fi
+
 #
 # SDL was disabled above; must also disable SDL-dependent modules
 #
@@ -579,6 +585,37 @@ if [ "$PLATFORM" = "psp" ]; then
 fi
 
 #
+# If the PSX arch is enabled, some code has to be compile time
+# enabled too.
+#
+if [ "$PLATFORM" = "psx" ]; then
+	echo "Enabling PSX-specific hacks."
+	echo "#define CONFIG_PSX" >> src/config.h
+	echo "BUILD_PSX=1" >> platform.inc
+
+	echo "Force disabling software renderer on PSX."
+	SOFTWARE="false"
+
+	#echo "Force-enabling GP2X 320x240 renderer."
+	#GP2X="true"
+
+	echo "TEMPORARY: Force-disabling Modplug audio."
+	MODPLUG="false"
+
+	echo "TEMPORARY: Force-disabling pthreads."
+	PTHREAD="false"
+
+	echo "TEMPORARY: Force-disabling vorbis."
+	VORBIS="false"
+
+	echo "TEMPORARY: Force-disabling libpng."
+	LIBPNG="false"
+
+	echo "TEMPORARY: Force-disabling all audio."
+	AUDIO="false"
+fi
+
+#
 # If the GP2X arch is enabled, some code has to be compile time
 # enabled too.
 #
@@ -601,11 +638,15 @@ if [ "$PLATFORM" = "gp2x" ]; then
 fi
 
 #
-# Force-disable OpenGL and overlay renderers on PSP, GP2X, 3DS, NDS and Wii
+# Force-disable OpenGL and overlay renderers on
+# PSP, PSX, GP2X, 3DS, NDS and Wii
 #
-if [ "$PLATFORM" = "psp" -o "$PLATFORM" = "gp2x" \
+if [ "$PLATFORM" = "psp" \
+  -o "$PLATFORM" = "ps1" \
+  -o "$PLATFORM" = "gp2x" \
   -o "$PLATFORM" = "3ds" \
-  -o "$PLATFORM" = "nds" -o "$PLATFORM" = "wii" ]; then
+  -o "$PLATFORM" = "nds" \
+  -o "$PLATFORM" = "wii" ]; then
   	echo "Force-disabling OpenGL and overlay renderers."
 	GL="false"
 	OVERLAY="false"
@@ -628,7 +669,8 @@ fi
 #
 # Force-enable tremor-lowmem on GP2X
 #
-if [ "$PLATFORM" = "gp2x" -o "$PLATFORM" = "android" ]; then
+if [ "$PLATFORM" = "gp2x" \
+  -o "$PLATFORM" = "android" ]; then
 	echo "Force-switching ogg/vorbis to tremor-lowmem."
 	VORBIS="tremor-lowmem"
 fi
@@ -655,9 +697,12 @@ fi
 #
 # Force disable modular DSOs.
 #
-if [ "$PLATFORM" = "gp2x" -o "$PLATFORM" = "nds" \
+if [ "$PLATFORM" = "gp2x" \
+  -o "$PLATFORM" = "nds" \
   -o "$PLATFORM" = "3ds" \
-  -o "$PLATFORM" = "psp"  -o "$PLATFORM" = "wii" ]; then
+  -o "$PLATFORM" = "psp" \
+  -o "$PLATFORM" = "psx" \
+  -o "$PLATFORM" = "wii" ]; then
 	echo "Force-disabling modular build (nonsensical or unsupported)."
 	MODULAR="false"
 fi
@@ -666,7 +711,9 @@ fi
 # Force disable networking (unsupported platform or no editor build)
 # Also disable all network applications
 #
-if [ "$EDITOR" = "false" -o "$PLATFORM" = "nds" ]; then
+if [ "$EDITOR" = "false" \
+  -o "$PLATFORM" = "psx" \
+  -o "$PLATFORM" = "nds" ]; then
 	echo "Force-disabling networking (unsupported platform or editor disabled)."
 	NETWORK="false"
 	UPDATER="false"
@@ -820,8 +867,11 @@ fi
 # Force disable icon branding.
 #
 if [ "$ICON" = "true" ]; then
-	if [ "$PLATFORM" = "darwin" -o "$PLATFORM" = "gp2x" \
-	  -o "$PLATFORM" = "psp" -o "$PLATFORM" = "nds" \
+	if [ "$PLATFORM" = "darwin"\
+	  -o "$PLATFORM" = "gp2x" \
+	  -o "$PLATFORM" = "psp" \
+	  -o "$PLATFORM" = "psx" \
+	  -o "$PLATFORM" = "nds" \
 	  -o "$PLATFORM" = "wii" ]; then
 		echo "Force-disabling icon branding (redundant)."
 		ICON="false"
